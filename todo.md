@@ -1,0 +1,34 @@
+# Hanuman Tennis Academy - TODO
+
+- [x] App branding: Logo, icon, splash screen
+- [x] Theme configuration (tennis green + gold colors)
+- [x] Backend database schema (Players, Coach Eval, Self Report, Match Stats, Reports)
+- [x] Authentication system with role-based access (Player, Coach, Head Coach, Admin)
+- [x] Login screen with role selection
+- [x] Player Home screen with quick stats and check-in button
+- [x] Daily Check-in form (Training hours, Fatigue, Confidence, Stress, Injury, Goals)
+- [x] Player Progress screen with radar chart and trend lines
+- [x] Player Match Stats screen (Serve%, Winners, UE, Results)
+- [x] Player Reports screen (AI-generated summaries)
+- [x] Player Profile screen
+- [x] Coach Home screen with team overview and evaluation queue
+- [x] Coach Player Evaluation form (Technique, Fitness, Tactics, Mental, Discipline, MatchIQ)
+- [x] Coach Team list with player details
+- [x] Coach Player Detail screen (full history view)
+- [x] Coach Notes feature
+- [x] Head Coach Dashboard - Command Center (Avg Performance, Risk Index, High Risk)
+- [x] Head Coach Player 360° View (Radar, Trends, AI Summary)
+- [x] Head Coach Tournament Dashboard
+- [x] Head Coach Coach Analysis view
+- [x] Head Coach All Players list with filters
+- [ ] Admin User Management (CRUD)
+- [ ] Admin Academy Settings
+- [x] KPI Framework (Performance Index, Readiness Index, Peak Index)
+- [x] Risk Model (Injury, Burnout, Plateau detection)
+- [x] Tab navigation per role
+- [x] Report generation system
+- [x] Mode support (Weekly, Monthly, Tournament)
+- [x] Add Match form
+- [x] Add Note form
+- [x] Report Detail screen
+- [x] Player Detail screen
