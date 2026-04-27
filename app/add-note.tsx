@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ScrollView, Text, View, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
+import { ScrollView, Text, View, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
-import { demoPlayers } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
 
 export default function AddNoteScreen() {
   const colors = useColors();
@@ -11,16 +11,41 @@ export default function AddNoteScreen() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
+  const { data: players = [], isLoading } = trpc.players.all.useQuery();
+  const createNote = trpc.notes.create.useMutation({
+    onSuccess: () => {
+      const msg = "บันทึกโน้ตสำเร็จ!";
+      Platform.OS === "web" ? alert(msg) : Alert.alert("สำเร็จ", msg);
+      router.back();
+    },
+    onError: (err: any) => {
+      const msg = "เกิดข้อผิดพลาด: " + (err.message || "ไม่ทราบสาเหตุ");
+      Platform.OS === "web" ? alert(msg) : Alert.alert("ผิดพลาด", msg);
+    },
+  });
+
   const handleSubmit = () => {
     if (!title.trim()) {
       const msg = "กรุณากรอกหัวข้อ";
       Platform.OS === "web" ? alert(msg) : Alert.alert("แจ้งเตือน", msg);
       return;
     }
-    const msg = "บันทึกโน้ตสำเร็จ!";
-    Platform.OS === "web" ? alert(msg) : Alert.alert("สำเร็จ", msg);
-    router.back();
+    createNote.mutate({
+      coachId: 1,
+      playerId: selectedPlayer ?? undefined,
+      title: title.trim(),
+      content: content.trim(),
+      noteDate: new Date().toISOString().split("T")[0],
+    });
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.container}>
@@ -33,7 +58,7 @@ export default function AddNoteScreen() {
           >
             <Text style={{ color: selectedPlayer === null ? "#fff" : colors.foreground, fontSize: 13 }}>ทั่วไป</Text>
           </TouchableOpacity>
-          {demoPlayers.map((p) => (
+          {players.map((p: any) => (
             <TouchableOpacity
               key={p.id}
               style={[styles.chip, { backgroundColor: selectedPlayer === p.id ? colors.primary : colors.surface, borderColor: selectedPlayer === p.id ? colors.primary : colors.border }]}
@@ -71,11 +96,12 @@ export default function AddNoteScreen() {
       </View>
 
       <TouchableOpacity
-        style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+        style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: createNote.isPending ? 0.6 : 1 }]}
         onPress={handleSubmit}
         activeOpacity={0.8}
+        disabled={createNote.isPending}
       >
-        <Text style={styles.submitText}>บันทึกโน้ต</Text>
+        <Text style={styles.submitText}>{createNote.isPending ? "กำลังบันทึก..." : "บันทึกโน้ต"}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

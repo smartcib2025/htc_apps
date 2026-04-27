@@ -1,33 +1,59 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useAppContext } from "@/lib/app-context";
-import { demoPlayers, demoCheckins, demoEvaluations, demoReports, demoCoaches, calculatePerformanceIndex, calculateRiskScore, getRiskColor } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
+
+function getRiskColor(level: string) {
+  if (level === "high") return "#EF4444";
+  if (level === "medium") return "#F59E0B";
+  return "#22C55E";
+}
+
+function calcRiskFromCheckins(checkins: any[]) {
+  if (!checkins || checkins.length === 0) return { score: 0, level: "low" };
+  const avgFatigue = checkins.reduce((s: number, c: any) => s + (c.fatigue || 0), 0) / checkins.length;
+  const avgStress = checkins.reduce((s: number, c: any) => s + (c.stress || 0), 0) / checkins.length;
+  const score = Math.round(((avgFatigue + avgStress) / 2) * 10);
+  const level = score >= 70 ? "high" : score >= 40 ? "medium" : "low";
+  return { score, level };
+}
+
+function calcPerfIndex(ev: any) {
+  if (!ev) return 0;
+  const scores = [ev.technique, ev.fitness, ev.tactics, ev.mental, ev.matchIQ].filter(Boolean) as number[];
+  return scores.length > 0 ? Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10 : 0;
+}
 
 function PlayerHome() {
   const colors = useColors();
   const router = useRouter();
-  const { userName } = useAppContext();
-  const player = demoPlayers[0];
-  const recentCheckins = demoCheckins.filter(c => c.playerId === player.id);
-  const latestEval = demoEvaluations.find(e => e.playerId === player.id);
-  const risk = calculateRiskScore(recentCheckins);
-  const perfIndex = latestEval ? calculatePerformanceIndex(latestEval) : 0;
-  const todayCheckin = recentCheckins.find(c => c.checkinDate === new Date().toISOString().split("T")[0]);
+  const { userName, profileId } = useAppContext();
+  const playerId = profileId || 1;
+
+  const { data: player } = trpc.players.byId.useQuery({ id: playerId });
+  const { data: recentCheckins = [] } = trpc.checkins.byPlayer.useQuery({ playerId, limit: 7 });
+  const { data: latestEval } = trpc.evaluations.latest.useQuery({ playerId });
+  const todayStr = new Date().toISOString().split("T")[0];
+  const { data: todayCheckin } = trpc.checkins.byDate.useQuery({ playerId, date: todayStr });
+
+  const risk = useMemo(() => calcRiskFromCheckins(recentCheckins), [recentCheckins]);
+  const perfIndex = useMemo(() => calcPerfIndex(latestEval), [latestEval]);
+  const totalHours = useMemo(() => recentCheckins.reduce((s: number, c: any) => s + (c.trainingHours || 0), 0), [recentCheckins]);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.welcomeSection}>
         <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี</Text>
-        <Text style={[styles.userName, { color: colors.foreground }]}>{userName || player.name}</Text>
-        <Text style={[styles.levelBadge, { backgroundColor: colors.primary + "20", color: colors.primary }]}>
-          {player.level} · {player.program}
-        </Text>
+        <Text style={[styles.userName, { color: colors.foreground }]}>{userName || player?.name || "นักกีฬา"}</Text>
+        {player && (
+          <Text style={[styles.levelBadge, { backgroundColor: colors.primary + "20", color: colors.primary }]}>
+            {player.level} · {player.program}
+          </Text>
+        )}
       </View>
-
-      {/* Quick Stats */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
         <View style={[styles.statCard, { backgroundColor: colors.primary + "15" }]}>
           <Text style={[styles.statValue, { color: colors.primary }]}>{perfIndex}</Text>
@@ -42,14 +68,10 @@ function PlayerHome() {
           <Text style={[styles.statLabel, { color: colors.muted }]}>Risk Score</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.warning + "15" }]}>
-          <Text style={[styles.statValue, { color: colors.warning }]}>
-            {recentCheckins.reduce((s, c) => s + (c.trainingHours || 0), 0)}h
-          </Text>
+          <Text style={[styles.statValue, { color: colors.warning }]}>{totalHours}h</Text>
           <Text style={[styles.statLabel, { color: colors.muted }]}>ชั่วโมงฝึกซ้อม</Text>
         </View>
       </ScrollView>
-
-      {/* Today's Check-in */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>เช็คอินวันนี้</Text>
@@ -64,11 +86,7 @@ function PlayerHome() {
           )}
         </View>
         {!todayCheckin && (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/checkin")}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/checkin")} activeOpacity={0.8}>
             <Text style={styles.actionBtnText}>เช็คอินเลย</Text>
           </TouchableOpacity>
         )}
@@ -89,12 +107,10 @@ function PlayerHome() {
           </View>
         )}
       </View>
-
-      {/* Latest Evaluation */}
       {latestEval && (
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>การประเมินล่าสุด</Text>
-          <Text style={[styles.evalDate, { color: colors.muted }]}>{latestEval.evalDate}</Text>
+          <Text style={[styles.evalDate, { color: colors.muted }]}>{String(latestEval.evalDate)}</Text>
           <View style={styles.evalGrid}>
             {[
               { label: "Technique", value: latestEval.technique },
@@ -104,16 +120,14 @@ function PlayerHome() {
               { label: "MatchIQ", value: latestEval.matchIQ },
             ].map((item) => (
               <View key={item.label} style={styles.evalItem}>
-                <Text style={[styles.evalScore, { color: colors.primary }]}>{item.value}</Text>
+                <Text style={[styles.evalScore, { color: colors.primary }]}>{item.value || "-"}</Text>
                 <Text style={[styles.evalLabel, { color: colors.muted }]}>{item.label}</Text>
               </View>
             ))}
           </View>
           {latestEval.coachComment && (
             <View style={[styles.commentBox, { backgroundColor: colors.primary + "08" }]}>
-              <Text style={[styles.commentText, { color: colors.foreground }]}>
-                "{latestEval.coachComment}"
-              </Text>
+              <Text style={[styles.commentText, { color: colors.foreground }]}>"{latestEval.coachComment}"</Text>
             </View>
           )}
         </View>
@@ -125,72 +139,44 @@ function PlayerHome() {
 function CoachHome() {
   const colors = useColors();
   const router = useRouter();
-  const { userName } = useAppContext();
-  const myPlayers = demoPlayers.filter(p => p.coachId === 1);
-  const todayStr = new Date().toISOString().split("T")[0];
-  const todayCheckins = demoCheckins.filter(c => c.checkinDate === todayStr);
+  const { userName, profileId } = useAppContext();
+  const coachId = profileId || 1;
+
+  const { data: myPlayers = [] } = trpc.players.byCoach.useQuery({ coachId });
+  const { data: allCheckins = [] } = trpc.checkins.today.useQuery({ date: new Date().toISOString().split("T")[0] });
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.welcomeSection}>
-        <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี</Text>
+        <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี โค้ช</Text>
         <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
       </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
-        <View style={[styles.statCard, { backgroundColor: colors.primary + "15" }]}>
-          <Text style={[styles.statValue, { color: colors.primary }]}>{myPlayers.length}</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>นักกีฬาในทีม</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.success + "15" }]}>
-          <Text style={[styles.statValue, { color: colors.success }]}>{todayCheckins.length}</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>เช็คอินวันนี้</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.warning + "15" }]}>
-          <Text style={[styles.statValue, { color: colors.warning }]}>
-            {myPlayers.filter(p => p.status === "injured").length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>บาดเจ็บ</Text>
-        </View>
-      </ScrollView>
-
-      <TouchableOpacity
-        style={[styles.bigActionBtn, { backgroundColor: colors.primary }]}
-        onPress={() => router.push("/evaluate")}
-        activeOpacity={0.8}
-      >
+      <TouchableOpacity style={[styles.bigActionBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/evaluate")} activeOpacity={0.8}>
         <Text style={styles.bigActionText}>ประเมินนักกีฬา</Text>
       </TouchableOpacity>
-
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>นักกีฬาในทีม</Text>
-        {myPlayers.map((player) => {
-          const pCheckins = demoCheckins.filter(c => c.playerId === player.id);
-          const risk = calculateRiskScore(pCheckins);
-          return (
-            <TouchableOpacity
-              key={player.id}
-              style={[styles.playerRow, { borderBottomColor: colors.border }]}
-              onPress={() => router.push({ pathname: "/player-detail", params: { id: player.id.toString() } })}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}>
-                <Text style={[styles.avatarText, { color: colors.primary }]}>
-                  {player.name.charAt(0)}
-                </Text>
-              </View>
-              <View style={styles.playerInfo}>
-                <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
-                <Text style={[styles.playerLevel, { color: colors.muted }]}>{player.level} · {player.program}</Text>
-              </View>
-              <View style={[styles.riskBadge, { backgroundColor: getRiskColor(risk.level) + "20" }]}>
-                <Text style={{ color: getRiskColor(risk.level), fontSize: 11, fontWeight: "600" }}>
-                  {risk.level === "high" ? "สูง" : risk.level === "medium" ? "กลาง" : "ต่ำ"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>นักกีฬาในทีม ({myPlayers.length})</Text>
+        {myPlayers.map((player: any) => (
+          <TouchableOpacity
+            key={player.id}
+            style={[styles.playerRow, { borderBottomColor: colors.border }]}
+            onPress={() => router.push({ pathname: "/player-detail", params: { id: player.id.toString() } })}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}>
+              <Text style={[styles.avatarText, { color: colors.primary }]}>{player.name.charAt(0)}</Text>
+            </View>
+            <View style={styles.playerInfo}>
+              <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
+              <Text style={[styles.playerLevel, { color: colors.muted }]}>{player.level} · {player.program}</Text>
+            </View>
+            <View style={[styles.riskBadge, { backgroundColor: (player.status === "injured" ? colors.error : colors.success) + "20" }]}>
+              <Text style={{ color: player.status === "injured" ? colors.error : colors.success, fontSize: 11, fontWeight: "600" }}>
+                {player.status === "injured" ? "บาดเจ็บ" : "ปกติ"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -200,21 +186,15 @@ function HeadCoachDashboard() {
   const colors = useColors();
   const { userName } = useAppContext();
   const router = useRouter();
-  const totalPlayers = demoPlayers.length;
-  const activePlayers = demoPlayers.filter(p => p.status === "active").length;
-  const injuredPlayers = demoPlayers.filter(p => p.status === "injured").length;
-  const todayStr = new Date().toISOString().split("T")[0];
-  const todayCheckins = demoCheckins.filter(c => c.checkinDate === todayStr);
 
-  const highRiskPlayers = demoPlayers.filter(p => {
-    const pCheckins = demoCheckins.filter(c => c.playerId === p.id);
-    const risk = calculateRiskScore(pCheckins);
-    return risk.level === "high" || risk.level === "medium";
-  });
+  const { data: dashStats } = trpc.dashboard.stats.useQuery();
+  const { data: allPlayers = [] } = trpc.players.all.useQuery();
+  const { data: allCoaches = [] } = trpc.coaches.all.useQuery();
 
-  const avgPerf = demoEvaluations.length > 0
-    ? Math.round(demoEvaluations.reduce((s, e) => s + calculatePerformanceIndex(e), 0) / demoEvaluations.length * 10) / 10
-    : 0;
+  const totalPlayers = dashStats?.totalPlayers ?? allPlayers.length;
+  const activeToday = dashStats?.activeToday ?? 0;
+  const highRiskCount = dashStats?.highRiskCount ?? 0;
+  const injuredPlayers = allPlayers.filter((p: any) => p.status === "injured").length;
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -222,99 +202,72 @@ function HeadCoachDashboard() {
         <Text style={[styles.greeting, { color: colors.muted }]}>Dashboard</Text>
         <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
       </View>
-
-      {/* Command Center Stats */}
       <View style={styles.dashGrid}>
         <View style={[styles.dashCard, { backgroundColor: colors.primary + "12" }]}>
           <Text style={[styles.dashValue, { color: colors.primary }]}>{totalPlayers}</Text>
           <Text style={[styles.dashLabel, { color: colors.muted }]}>นักกีฬาทั้งหมด</Text>
         </View>
         <View style={[styles.dashCard, { backgroundColor: colors.success + "12" }]}>
-          <Text style={[styles.dashValue, { color: colors.success }]}>{activePlayers}</Text>
-          <Text style={[styles.dashLabel, { color: colors.muted }]}>Active</Text>
+          <Text style={[styles.dashValue, { color: colors.success }]}>{activeToday}</Text>
+          <Text style={[styles.dashLabel, { color: colors.muted }]}>เช็คอินวันนี้</Text>
         </View>
         <View style={[styles.dashCard, { backgroundColor: colors.error + "12" }]}>
           <Text style={[styles.dashValue, { color: colors.error }]}>{injuredPlayers}</Text>
           <Text style={[styles.dashLabel, { color: colors.muted }]}>บาดเจ็บ</Text>
         </View>
         <View style={[styles.dashCard, { backgroundColor: colors.warning + "12" }]}>
-          <Text style={[styles.dashValue, { color: colors.warning }]}>{avgPerf}</Text>
-          <Text style={[styles.dashLabel, { color: colors.muted }]}>Avg Performance</Text>
+          <Text style={[styles.dashValue, { color: colors.warning }]}>{highRiskCount}</Text>
+          <Text style={[styles.dashLabel, { color: colors.muted }]}>High Risk</Text>
         </View>
       </View>
-
-      {/* Today's Activity */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>กิจกรรมวันนี้</Text>
         <View style={styles.activityRow}>
           <Text style={[styles.activityLabel, { color: colors.muted }]}>เช็คอินแล้ว</Text>
-          <Text style={[styles.activityValue, { color: colors.primary }]}>
-            {todayCheckins.length}/{totalPlayers}
-          </Text>
+          <Text style={[styles.activityValue, { color: colors.primary }]}>{activeToday}/{totalPlayers}</Text>
         </View>
         <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-          <View
-            style={[
-              styles.progressFill,
-              { backgroundColor: colors.primary, width: `${(todayCheckins.length / totalPlayers) * 100}%` },
-            ]}
-          />
+          <View style={[styles.progressFill, { backgroundColor: colors.primary, width: totalPlayers > 0 ? `${(activeToday / totalPlayers) * 100}%` : "0%" }]} />
         </View>
       </View>
-
-      {/* Risk Alerts */}
-      {highRiskPlayers.length > 0 && (
-        <View style={[styles.card, { backgroundColor: colors.error + "08", borderColor: colors.error + "30" }]}>
-          <Text style={[styles.cardTitle, { color: colors.error }]}>
-            แจ้งเตือนความเสี่ยง ({highRiskPlayers.length})
-          </Text>
-          {highRiskPlayers.map((player) => {
-            const pCheckins = demoCheckins.filter(c => c.playerId === player.id);
-            const risk = calculateRiskScore(pCheckins);
-            return (
-              <TouchableOpacity
-                key={player.id}
-                style={[styles.playerRow, { borderBottomColor: colors.border }]}
-                onPress={() => router.push({ pathname: "/player-detail", params: { id: player.id.toString() } })}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.avatar, { backgroundColor: getRiskColor(risk.level) + "20" }]}>
-                  <Text style={[styles.avatarText, { color: getRiskColor(risk.level) }]}>
-                    {player.name.charAt(0)}
-                  </Text>
-                </View>
-                <View style={styles.playerInfo}>
-                  <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
-                  <Text style={[styles.playerLevel, { color: colors.muted }]}>Risk: {risk.score}%</Text>
-                </View>
-                <View style={[styles.riskBadge, { backgroundColor: getRiskColor(risk.level) + "20" }]}>
-                  <Text style={{ color: getRiskColor(risk.level), fontSize: 11, fontWeight: "600" }}>
-                    {risk.level === "high" ? "สูง" : "กลาง"}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+      {allPlayers.length > 0 && (
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>นักกีฬาทั้งหมด</Text>
+          {allPlayers.map((player: any) => (
+            <TouchableOpacity
+              key={player.id}
+              style={[styles.playerRow, { borderBottomColor: colors.border }]}
+              onPress={() => router.push({ pathname: "/player-detail", params: { id: player.id.toString() } })}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}>
+                <Text style={[styles.avatarText, { color: colors.primary }]}>{player.name.charAt(0)}</Text>
+              </View>
+              <View style={styles.playerInfo}>
+                <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
+                <Text style={[styles.playerLevel, { color: colors.muted }]}>{player.level} · {player.program}</Text>
+              </View>
+              <View style={[styles.riskBadge, { backgroundColor: (player.status === "injured" ? colors.error : player.status === "inactive" ? colors.warning : colors.success) + "20" }]}>
+                <Text style={{ color: player.status === "injured" ? colors.error : player.status === "inactive" ? colors.warning : colors.success, fontSize: 11, fontWeight: "600" }}>
+                  {player.status === "injured" ? "บาดเจ็บ" : player.status === "inactive" ? "ไม่ใช้งาน" : "ปกติ"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
-
-      {/* Coaches Overview */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>โค้ชในสถาบัน</Text>
-        {demoCoaches.map((coach) => {
-          const coachPlayers = demoPlayers.filter(p => p.coachId === coach.id);
+        {allCoaches.map((coach: any) => {
+          const coachPlayers = allPlayers.filter((p: any) => p.coachId === coach.id);
           return (
             <View key={coach.id} style={[styles.playerRow, { borderBottomColor: colors.border }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.accent + "20" }]}>
-                <Text style={[styles.avatarText, { color: colors.accent }]}>
-                  {coach.name.charAt(0)}
-                </Text>
+              <View style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}>
+                <Text style={[styles.avatarText, { color: colors.primary }]}>{coach.name.charAt(0)}</Text>
               </View>
               <View style={styles.playerInfo}>
                 <Text style={[styles.playerName, { color: colors.foreground }]}>{coach.name}</Text>
-                <Text style={[styles.playerLevel, { color: colors.muted }]}>
-                  {coach.specialty} · {coachPlayers.length} นักกีฬา
-                </Text>
+                <Text style={[styles.playerLevel, { color: colors.muted }]}>{coach.specialty || coach.coachRole} · {coachPlayers.length} นักกีฬา</Text>
               </View>
             </View>
           );
@@ -326,19 +279,16 @@ function HeadCoachDashboard() {
 
 export default function HomeScreen() {
   const { role } = useAppContext();
+  const utils = trpc.useUtils();
   const [refreshing, setRefreshing] = useState(false);
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
+    utils.invalidate().then(() => setRefreshing(false)).catch(() => setRefreshing(false));
+  }, [utils]);
 
   return (
     <ScreenContainer className="flex-1">
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />} contentContainerStyle={{ flexGrow: 1 }}>
         {role === "player" && <PlayerHome />}
         {role === "coach" && <CoachHome />}
         {(role === "head_coach" || role === "admin") && <HeadCoachDashboard />}

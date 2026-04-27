@@ -1,23 +1,43 @@
-import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { demoCheckins, demoEvaluations, demoMatches, calculatePerformanceIndex } from "@/lib/demo-data";
+import { useAppContext } from "@/lib/app-context";
+import { trpc } from "@/lib/trpc";
+import { useMemo } from "react";
+
+function calcPerfIndex(ev: any) {
+  if (!ev) return 0;
+  const scores = [ev.technique, ev.fitness, ev.tactics, ev.mental, ev.matchIQ].filter(Boolean) as number[];
+  return scores.length > 0 ? Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10 : 0;
+}
 
 export default function ProgressScreen() {
   const colors = useColors();
-  const playerId = 1;
-  const checkins = demoCheckins.filter(c => c.playerId === playerId);
-  const evals = demoEvaluations.filter(e => e.playerId === playerId);
-  const matches = demoMatches.filter(m => m.playerId === playerId);
-  const wins = matches.filter(m => m.result === "win").length;
-  const winRate = matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0;
+  const { profileId } = useAppContext();
+  const playerId = profileId || 1;
+
+  const { data: checkins = [], isLoading: l1 } = trpc.checkins.byPlayer.useQuery({ playerId, limit: 30 });
+  const { data: evals = [], isLoading: l2 } = trpc.evaluations.byPlayer.useQuery({ playerId, limit: 20 });
+  const { data: matches = [], isLoading: l3 } = trpc.matches.byPlayer.useQuery({ playerId, limit: 20 });
+
+  const wins = useMemo(() => matches.filter((m: any) => m.result === "win").length, [matches]);
+  const winRate = useMemo(() => matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0, [wins, matches]);
+
+  if (l1 || l2 || l3) {
+    return (
+      <ScreenContainer className="flex-1">
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.muted, marginTop: 12 }}>กำลังโหลดข้อมูล...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer className="flex-1">
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.title, { color: colors.foreground }]}>ความก้าวหน้า</Text>
-
-        {/* Win Rate */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>สถิติการแข่งขัน</Text>
           <View style={styles.winRateRow}>
@@ -41,22 +61,21 @@ export default function ProgressScreen() {
             </View>
           </View>
         </View>
-
-        {/* Performance Trend */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>แนวโน้มการประเมิน</Text>
-          {evals.map((ev, idx) => {
-            const perf = calculatePerformanceIndex(ev);
+          {evals.length === 0 && <Text style={{ color: colors.muted, fontSize: 14 }}>ยังไม่มีข้อมูลการประเมิน</Text>}
+          {evals.map((ev: any, idx: number) => {
+            const perf = calcPerfIndex(ev);
             return (
               <View key={ev.id} style={[styles.evalRow, idx < evals.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border }]}>
-                <Text style={[styles.evalDate, { color: colors.muted }]}>{ev.evalDate}</Text>
+                <Text style={[styles.evalDate, { color: colors.muted }]}>{String(ev.evalDate)}</Text>
                 <View style={styles.evalBars}>
                   {[
                     { label: "Tech", value: ev.technique, color: colors.primary },
                     { label: "Fit", value: ev.fitness, color: colors.success },
                     { label: "Tac", value: ev.tactics, color: colors.warning },
-                    { label: "Men", value: ev.mental, color: colors.accent },
-                    { label: "IQ", value: ev.matchIQ, color: colors.gold },
+                    { label: "Men", value: ev.mental, color: colors.primary },
+                    { label: "IQ", value: ev.matchIQ, color: colors.warning },
                   ].map((item) => (
                     <View key={item.label} style={styles.barItem}>
                       <View style={[styles.barBg, { backgroundColor: colors.border }]}>
@@ -71,14 +90,13 @@ export default function ProgressScreen() {
             );
           })}
         </View>
-
-        {/* Check-in History */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>ประวัติเช็คอิน</Text>
-          {checkins.map((ci, idx) => (
+          {checkins.length === 0 && <Text style={{ color: colors.muted, fontSize: 14 }}>ยังไม่มีข้อมูลเช็คอิน</Text>}
+          {checkins.map((ci: any, idx: number) => (
             <View key={ci.id} style={[styles.checkinItem, idx < checkins.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border }]}>
               <View style={styles.checkinHeader}>
-                <Text style={[styles.checkinDate, { color: colors.foreground }]}>{ci.checkinDate}</Text>
+                <Text style={[styles.checkinDate, { color: colors.foreground }]}>{String(ci.checkinDate)}</Text>
                 <Text style={[styles.checkinHours, { color: colors.primary }]}>{ci.trainingHours}h</Text>
               </View>
               <View style={styles.checkinMetrics}>

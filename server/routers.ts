@@ -18,12 +18,12 @@ export const appRouter = router({
 
   // ============ PLAYERS ============
   players: router({
-    list: protectedProcedure.query(() => db.getAllPlayers()),
-    byCoach: protectedProcedure.input(z.object({ coachId: z.number() })).query(({ input }) => db.getPlayersByCoach(input.coachId)),
-    byId: protectedProcedure.input(z.object({ id: z.number() })).query(({ input }) => db.getPlayerById(input.id)),
-    byUserId: protectedProcedure.input(z.object({ userId: z.number() })).query(({ input }) => db.getPlayerByUserId(input.userId)),
-    myProfile: protectedProcedure.query(({ ctx }) => db.getPlayerByUserId(ctx.user.id)),
-    create: protectedProcedure.input(z.object({
+    all: publicProcedure.query(() => db.getAllPlayers()),
+    list: publicProcedure.query(() => db.getAllPlayers()),
+    byCoach: publicProcedure.input(z.object({ coachId: z.number() })).query(({ input }) => db.getPlayersByCoach(input.coachId)),
+    byId: publicProcedure.input(z.object({ id: z.number() })).query(({ input }) => db.getPlayerById(input.id)),
+    byUserId: publicProcedure.input(z.object({ userId: z.number() })).query(({ input }) => db.getPlayerByUserId(input.userId)),
+    create: publicProcedure.input(z.object({
       name: z.string().min(1).max(255),
       level: z.string().optional(),
       program: z.string().optional(),
@@ -32,37 +32,40 @@ export const appRouter = router({
       emergencyContact: z.string().optional(),
       dateOfBirth: z.string().optional(),
       userId: z.number().optional(),
+      status: z.enum(["active", "inactive", "injured"]).optional(),
     })).mutation(({ input }) => db.createPlayer(input as any)),
-    update: protectedProcedure.input(z.object({
+    update: publicProcedure.input(z.object({
       id: z.number(),
       name: z.string().optional(),
       level: z.string().optional(),
       program: z.string().optional(),
       coachId: z.number().optional(),
       phone: z.string().optional(),
+      emergencyContact: z.string().optional(),
       status: z.enum(["active", "inactive", "injured"]).optional(),
     })).mutation(({ input }) => {
       const { id, ...data } = input;
       return db.updatePlayer(id, data as any);
     }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deletePlayer(input.id)),
-    performance: protectedProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getPlayerPerformanceSummary(input.playerId)),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deletePlayer(input.id)),
+    performance: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getPlayerPerformanceSummary(input.playerId)),
   }),
 
   // ============ COACHES ============
   coaches: router({
-    list: protectedProcedure.query(() => db.getAllCoaches()),
-    byId: protectedProcedure.input(z.object({ id: z.number() })).query(({ input }) => db.getCoachById(input.id)),
-    byUserId: protectedProcedure.input(z.object({ userId: z.number() })).query(({ input }) => db.getCoachByUserId(input.userId)),
-    myProfile: protectedProcedure.query(({ ctx }) => db.getCoachByUserId(ctx.user.id)),
-    create: protectedProcedure.input(z.object({
+    all: publicProcedure.query(() => db.getAllCoaches()),
+    list: publicProcedure.query(() => db.getAllCoaches()),
+    byId: publicProcedure.input(z.object({ id: z.number() })).query(({ input }) => db.getCoachById(input.id)),
+    byUserId: publicProcedure.input(z.object({ userId: z.number() })).query(({ input }) => db.getCoachByUserId(input.userId)),
+    create: publicProcedure.input(z.object({
       name: z.string().min(1).max(255),
       coachRole: z.enum(["coach", "head_coach", "admin"]).optional(),
       specialty: z.string().optional(),
       phone: z.string().optional(),
       userId: z.number().optional(),
+      status: z.enum(["active", "inactive"]).optional(),
     })).mutation(({ input }) => db.createCoach(input as any)),
-    update: protectedProcedure.input(z.object({
+    update: publicProcedure.input(z.object({
       id: z.number(),
       name: z.string().optional(),
       coachRole: z.enum(["coach", "head_coach", "admin"]).optional(),
@@ -73,15 +76,15 @@ export const appRouter = router({
       const { id, ...data } = input;
       return db.updateCoach(id, data as any);
     }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteCoach(input.id)),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteCoach(input.id)),
   }),
 
   // ============ DAILY CHECK-INS ============
   checkins: router({
-    byPlayer: protectedProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getCheckinsByPlayer(input.playerId, input.limit)),
-    byDate: protectedProcedure.input(z.object({ playerId: z.number(), date: z.string() })).query(({ input }) => db.getCheckinByDate(input.playerId, input.date)),
-    today: protectedProcedure.input(z.object({ date: z.string() })).query(({ input }) => db.getAllCheckinsToday(input.date)),
-    create: protectedProcedure.input(z.object({
+    byPlayer: publicProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getCheckinsByPlayer(input.playerId, input.limit)),
+    byDate: publicProcedure.input(z.object({ playerId: z.number(), date: z.string() })).query(({ input }) => db.getCheckinByDate(input.playerId, input.date)),
+    today: publicProcedure.input(z.object({ date: z.string() })).query(({ input }) => db.getAllCheckinsToday(input.date)),
+    create: publicProcedure.input(z.object({
       playerId: z.number(),
       checkinDate: z.string(),
       trainingHours: z.number().optional(),
@@ -99,10 +102,10 @@ export const appRouter = router({
 
   // ============ COACH EVALUATIONS ============
   evaluations: router({
-    byPlayer: protectedProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getEvalsByPlayer(input.playerId, input.limit)),
-    byCoach: protectedProcedure.input(z.object({ coachId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getEvalsByCoach(input.coachId, input.limit)),
-    latest: protectedProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getLatestEvalForPlayer(input.playerId)),
-    create: protectedProcedure.input(z.object({
+    byPlayer: publicProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getEvalsByPlayer(input.playerId, input.limit)),
+    byCoach: publicProcedure.input(z.object({ coachId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getEvalsByCoach(input.coachId, input.limit)),
+    latest: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getLatestEvalForPlayer(input.playerId)),
+    create: publicProcedure.input(z.object({
       playerId: z.number(),
       coachId: z.number(),
       technique: z.number().min(1).max(10).optional(),
@@ -121,9 +124,9 @@ export const appRouter = router({
 
   // ============ MATCH STATS ============
   matches: router({
-    byPlayer: protectedProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getMatchesByPlayer(input.playerId, input.limit)),
-    all: protectedProcedure.input(z.object({ limit: z.number().optional() })).query(({ input }) => db.getAllMatches(input.limit)),
-    create: protectedProcedure.input(z.object({
+    byPlayer: publicProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getMatchesByPlayer(input.playerId, input.limit)),
+    all: publicProcedure.input(z.object({ limit: z.number().optional() })).query(({ input }) => db.getAllMatches(input.limit)),
+    create: publicProcedure.input(z.object({
       playerId: z.number(),
       matchDate: z.string(),
       opponent: z.string().optional(),
@@ -139,9 +142,10 @@ export const appRouter = router({
 
   // ============ AI REPORTS ============
   reports: router({
-    byPlayer: protectedProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getReportsByPlayer(input.playerId, input.limit)),
-    latest: protectedProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getLatestReportForPlayer(input.playerId)),
-    create: protectedProcedure.input(z.object({
+    byId: publicProcedure.input(z.object({ id: z.number() })).query(({ input }) => db.getReportById(input.id)),
+    byPlayer: publicProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getReportsByPlayer(input.playerId, input.limit)),
+    latest: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getLatestReportForPlayer(input.playerId)),
+    create: publicProcedure.input(z.object({
       playerId: z.number(),
       reportType: z.enum(["weekly", "monthly", "tournament"]).optional(),
       summary: z.string().optional(),
@@ -159,16 +163,16 @@ export const appRouter = router({
 
   // ============ COACH NOTES ============
   notes: router({
-    byCoach: protectedProcedure.input(z.object({ coachId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getNotesByCoach(input.coachId, input.limit)),
-    byPlayer: protectedProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getNotesByPlayer(input.playerId, input.limit)),
-    create: protectedProcedure.input(z.object({
+    byCoach: publicProcedure.input(z.object({ coachId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getNotesByCoach(input.coachId, input.limit)),
+    byPlayer: publicProcedure.input(z.object({ playerId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getNotesByPlayer(input.playerId, input.limit)),
+    create: publicProcedure.input(z.object({
       coachId: z.number(),
       playerId: z.number().optional(),
       title: z.string().optional(),
       content: z.string().optional(),
       noteDate: z.string(),
     })).mutation(({ input }) => db.createNote(input as any)),
-    update: protectedProcedure.input(z.object({
+    update: publicProcedure.input(z.object({
       id: z.number(),
       title: z.string().optional(),
       content: z.string().optional(),
@@ -176,13 +180,20 @@ export const appRouter = router({
       const { id, ...data } = input;
       return db.updateNote(id, data as any);
     }),
-    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteNote(input.id)),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteNote(input.id)),
   }),
 
   // ============ DASHBOARD ============
   dashboard: router({
-    stats: protectedProcedure.query(() => db.getDashboardStats()),
-    playerPerformance: protectedProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getPlayerPerformanceSummary(input.playerId)),
+    stats: publicProcedure.query(() => db.getDashboardStats()),
+    playerPerformance: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getPlayerPerformanceSummary(input.playerId)),
+  }),
+
+  // ============ ACADEMY SETTINGS ============
+  settings: router({
+    all: publicProcedure.query(() => db.getAllSettings()),
+    get: publicProcedure.input(z.object({ key: z.string() })).query(({ input }) => db.getSetting(input.key)),
+    set: publicProcedure.input(z.object({ key: z.string(), value: z.string() })).mutation(({ input }) => db.setSetting(input.key, input.value)),
   }),
 });
 

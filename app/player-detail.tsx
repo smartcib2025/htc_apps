@@ -1,71 +1,86 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { ScrollView, Text, View, StyleSheet, ActivityIndicator } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { demoPlayers, demoCheckins, demoEvaluations, demoMatches, demoReports, calculatePerformanceIndex, calculateRiskScore, getRiskColor } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
+import { useMemo } from "react";
+
+function calcPerfIndex(ev: any) {
+  if (!ev) return 0;
+  const scores = [ev.technique, ev.fitness, ev.tactics, ev.mental, ev.matchIQ].filter(Boolean) as number[];
+  return scores.length > 0 ? Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10 : 0;
+}
 
 export default function PlayerDetailScreen() {
   const colors = useColors();
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const playerId = parseInt(id || "1", 10);
 
-  const player = demoPlayers.find(p => p.id === playerId) || demoPlayers[0];
-  const checkins = demoCheckins.filter(c => c.playerId === playerId);
-  const evals = demoEvaluations.filter(e => e.playerId === playerId);
-  const matches = demoMatches.filter(m => m.playerId === playerId);
-  const reports = demoReports.filter(r => r.playerId === playerId);
-  const latestEval = evals[0];
-  const risk = calculateRiskScore(checkins);
-  const perfIndex = latestEval ? calculatePerformanceIndex(latestEval) : 0;
-  const wins = matches.filter(m => m.result === "win").length;
-  const winRate = matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0;
+  const { data: allPlayers = [], isLoading: lp } = trpc.players.all.useQuery();
+  const { data: checkins = [], isLoading: lc } = trpc.checkins.byPlayer.useQuery({ playerId, limit: 10 });
+  const { data: evals = [], isLoading: le } = trpc.evaluations.byPlayer.useQuery({ playerId, limit: 5 });
+  const { data: matches = [], isLoading: lm } = trpc.matches.byPlayer.useQuery({ playerId, limit: 10 });
+  const { data: reports = [], isLoading: lr } = trpc.reports.byPlayer.useQuery({ playerId, limit: 3 });
+
+  const player = useMemo(() => allPlayers.find((p: any) => p.id === playerId) || { name: "...", level: "", program: "", status: "active" }, [allPlayers, playerId]);
+  const latestEval = evals[0] as any;
+  const perfIndex = latestEval ? calcPerfIndex(latestEval) : 0;
+  const wins = useMemo(() => matches.filter((m: any) => m.result === "win").length, [matches]);
+  const winRate = useMemo(() => matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0, [wins, matches]);
+
+  if (lp || lc || le || lm || lr) {
+    return (
+      <ScreenContainer edges={["left", "right"]}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.muted, marginTop: 12 }}>กำลังโหลดข้อมูล...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer edges={["left", "right"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Player Header */}
         <View style={styles.header}>
           <View style={[styles.avatarLarge, { backgroundColor: colors.primary + "20" }]}>
-            <Text style={[styles.avatarText, { color: colors.primary }]}>{player.name.charAt(0)}</Text>
+            <Text style={[styles.avatarText, { color: colors.primary }]}>{(player as any).name?.charAt(0) || "?"}</Text>
           </View>
-          <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
+          <Text style={[styles.playerName, { color: colors.foreground }]}>{(player as any).name}</Text>
           <View style={styles.badges}>
             <View style={[styles.badge, { backgroundColor: colors.primary + "15" }]}>
-              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{player.level}</Text>
+              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{(player as any).level}</Text>
             </View>
-            <View style={[styles.badge, { backgroundColor: colors.accent + "15" }]}>
-              <Text style={{ color: colors.accent, fontSize: 12, fontWeight: "600" }}>{player.program}</Text>
+            <View style={[styles.badge, { backgroundColor: colors.warning + "15" }]}>
+              <Text style={{ color: colors.warning, fontSize: 12, fontWeight: "600" }}>{(player as any).program}</Text>
             </View>
-            <View style={[styles.badge, { backgroundColor: player.status === "injured" ? colors.error + "15" : colors.success + "15" }]}>
-              <Text style={{ color: player.status === "injured" ? colors.error : colors.success, fontSize: 12, fontWeight: "600" }}>
-                {player.status === "injured" ? "บาดเจ็บ" : "Active"}
+            <View style={[styles.badge, { backgroundColor: (player as any).status === "injured" ? colors.error + "15" : colors.success + "15" }]}>
+              <Text style={{ color: (player as any).status === "injured" ? colors.error : colors.success, fontSize: 12, fontWeight: "600" }}>
+                {(player as any).status === "injured" ? "บาดเจ็บ" : "Active"}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Key Metrics */}
         <View style={styles.metricsRow}>
           <View style={[styles.metricCard, { backgroundColor: colors.primary + "12" }]}>
             <Text style={[styles.metricValue, { color: colors.primary }]}>{perfIndex}</Text>
             <Text style={[styles.metricLabel, { color: colors.muted }]}>Performance</Text>
           </View>
-          <View style={[styles.metricCard, { backgroundColor: getRiskColor(risk.level) + "12" }]}>
-            <Text style={[styles.metricValue, { color: getRiskColor(risk.level) }]}>{risk.score}%</Text>
-            <Text style={[styles.metricLabel, { color: colors.muted }]}>Risk</Text>
-          </View>
           <View style={[styles.metricCard, { backgroundColor: colors.success + "12" }]}>
             <Text style={[styles.metricValue, { color: colors.success }]}>{winRate}%</Text>
             <Text style={[styles.metricLabel, { color: colors.muted }]}>Win Rate</Text>
           </View>
+          <View style={[styles.metricCard, { backgroundColor: colors.warning + "12" }]}>
+            <Text style={[styles.metricValue, { color: colors.warning }]}>{checkins.length}</Text>
+            <Text style={[styles.metricLabel, { color: colors.muted }]}>Check-ins</Text>
+          </View>
         </View>
 
-        {/* Latest Evaluation */}
         {latestEval && (
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>การประเมินล่าสุด</Text>
-            <Text style={[styles.evalDate, { color: colors.muted }]}>{latestEval.evalDate}</Text>
+            <Text style={[styles.evalDate, { color: colors.muted }]}>{String(latestEval.evalDate)}</Text>
             <View style={styles.evalGrid}>
               {[
                 { label: "Technique", value: latestEval.technique },
@@ -96,12 +111,11 @@ export default function PlayerDetailScreen() {
           </View>
         )}
 
-        {/* Recent Check-ins */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>เช็คอินล่าสุด ({checkins.length})</Text>
-          {checkins.slice(0, 3).map((ci) => (
+          {checkins.slice(0, 3).map((ci: any) => (
             <View key={ci.id} style={[styles.checkinRow, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.checkinDate, { color: colors.foreground }]}>{ci.checkinDate}</Text>
+              <Text style={[styles.checkinDate, { color: colors.foreground }]}>{String(ci.checkinDate)}</Text>
               <View style={styles.checkinMetrics}>
                 <Text style={{ color: colors.warning, fontSize: 12 }}>เหนื่อย {ci.fatigue}</Text>
                 <Text style={{ color: colors.primary, fontSize: 12 }}>มั่นใจ {ci.confidence}</Text>
@@ -109,34 +123,33 @@ export default function PlayerDetailScreen() {
               </View>
             </View>
           ))}
+          {checkins.length === 0 && <Text style={{ color: colors.muted, fontSize: 13 }}>ยังไม่มีข้อมูลเช็คอิน</Text>}
         </View>
 
-        {/* Match History */}
         {matches.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>ผลแข่งขัน ({wins}W / {matches.length - wins}L)</Text>
-            {matches.slice(0, 3).map((m) => (
+            {matches.slice(0, 3).map((m: any) => (
               <View key={m.id} style={[styles.matchRow, { borderBottomColor: colors.border }]}>
                 <View style={[styles.resultDot, { backgroundColor: m.result === "win" ? colors.success : colors.error }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.matchScore, { color: colors.foreground }]}>{m.score}</Text>
+                  <Text style={[styles.matchScoreText, { color: colors.foreground }]}>{m.score}</Text>
                   <Text style={{ color: colors.muted, fontSize: 12 }}>vs {m.opponent}</Text>
                 </View>
-                <Text style={{ color: colors.muted, fontSize: 12 }}>{m.matchDate}</Text>
+                <Text style={{ color: colors.muted, fontSize: 12 }}>{String(m.matchDate)}</Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* Latest Report */}
         {reports.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>รายงานล่าสุด</Text>
-            <Text style={[styles.reportSummary, { color: colors.foreground }]}>{reports[0].summary}</Text>
-            {reports[0].actionPlan && (
+            <Text style={[styles.reportSummary, { color: colors.foreground }]}>{(reports[0] as any).summary}</Text>
+            {(reports[0] as any).actionPlan && (
               <View style={[styles.noteBox, { backgroundColor: colors.primary + "08" }]}>
                 <Text style={[styles.noteTitle, { color: colors.primary }]}>แผนพัฒนา</Text>
-                <Text style={[styles.noteText, { color: colors.foreground }]}>{reports[0].actionPlan}</Text>
+                <Text style={[styles.noteText, { color: colors.foreground }]}>{(reports[0] as any).actionPlan}</Text>
               </View>
             )}
           </View>
@@ -173,6 +186,6 @@ const styles = StyleSheet.create({
   checkinMetrics: { flexDirection: "row", gap: 12 },
   matchRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: 0.5 },
   resultDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-  matchScore: { fontSize: 15, fontWeight: "600" },
+  matchScoreText: { fontSize: 15, fontWeight: "600" },
   reportSummary: { fontSize: 14, lineHeight: 22, marginBottom: 12 },
 });

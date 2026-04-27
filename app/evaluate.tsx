@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ScrollView, Text, View, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
+import { ScrollView, Text, View, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
-import { demoPlayers } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
 
 function ScoreSelector({ label, value, onChange, color }: { label: string; value: number; onChange: (v: number) => void; color: string }) {
   const colors = useColors();
@@ -46,23 +46,54 @@ export default function EvaluateScreen() {
   const [weaknessNote, setWeaknessNote] = useState("");
   const [coachComment, setCoachComment] = useState("");
 
+  const { data: players = [], isLoading } = trpc.players.all.useQuery();
+  const createEval = trpc.evaluations.create.useMutation({
+    onSuccess: () => {
+      const msg = "บันทึกการประเมินสำเร็จ!";
+      Platform.OS === "web" ? alert(msg) : Alert.alert("สำเร็จ", msg);
+      router.back();
+    },
+    onError: (err: any) => {
+      const msg = "เกิดข้อผิดพลาด: " + (err.message || "ไม่ทราบสาเหตุ");
+      Platform.OS === "web" ? alert(msg) : Alert.alert("ผิดพลาด", msg);
+    },
+  });
+
   const handleSubmit = () => {
     if (!selectedPlayer) {
       const msg = "กรุณาเลือกนักกีฬา";
       Platform.OS === "web" ? alert(msg) : Alert.alert("แจ้งเตือน", msg);
       return;
     }
-    const msg = "บันทึกการประเมินสำเร็จ!";
-    Platform.OS === "web" ? alert(msg) : Alert.alert("สำเร็จ", msg);
-    router.back();
+    createEval.mutate({
+      playerId: selectedPlayer,
+      coachId: 1,
+      evalDate: new Date().toISOString().split("T")[0],
+      technique,
+      fitness,
+      tactics,
+      mental,
+      discipline,
+      matchIQ,
+      strengthNote,
+      weaknessNote,
+      coachComment,
+    });
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.container}>
-      {/* Player Selection */}
       <Text style={[styles.fieldLabel, { color: colors.foreground }]}>เลือกนักกีฬา</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.playerScroll}>
-        {demoPlayers.map((player) => (
+        {players.map((player: any) => (
           <TouchableOpacity
             key={player.id}
             style={[
@@ -79,18 +110,16 @@ export default function EvaluateScreen() {
         ))}
       </ScrollView>
 
-      {/* Scores */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>คะแนนประเมิน</Text>
         <ScoreSelector label="Technique (เทคนิค)" value={technique} onChange={setTechnique} color={colors.primary} />
         <ScoreSelector label="Fitness (สมรรถภาพ)" value={fitness} onChange={setFitness} color={colors.success} />
         <ScoreSelector label="Tactics (ยุทธวิธี)" value={tactics} onChange={setTactics} color={colors.warning} />
-        <ScoreSelector label="Mental (จิตใจ)" value={mental} onChange={setMental} color={colors.accent} />
-        <ScoreSelector label="Discipline (วินัย)" value={discipline} onChange={setDiscipline} color={colors.gold} />
+        <ScoreSelector label="Mental (จิตใจ)" value={mental} onChange={setMental} color={colors.primary} />
+        <ScoreSelector label="Discipline (วินัย)" value={discipline} onChange={setDiscipline} color={colors.warning} />
         <ScoreSelector label="Match IQ" value={matchIQ} onChange={setMatchIQ} color={colors.primary} />
       </View>
 
-      {/* Notes */}
       <View style={styles.field}>
         <Text style={[styles.fieldLabel, { color: colors.foreground }]}>จุดแข็ง</Text>
         <TextInput
@@ -131,11 +160,12 @@ export default function EvaluateScreen() {
       </View>
 
       <TouchableOpacity
-        style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+        style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: createEval.isPending ? 0.6 : 1 }]}
         onPress={handleSubmit}
         activeOpacity={0.8}
+        disabled={createEval.isPending}
       >
-        <Text style={styles.submitText}>บันทึกการประเมิน</Text>
+        <Text style={styles.submitText}>{createEval.isPending ? "กำลังบันทึก..." : "บันทึกการประเมิน"}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,25 +1,34 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { demoPlayers, demoCheckins, calculateRiskScore, getRiskColor } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
 
 export default function TeamScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { data: allPlayers = [], isLoading } = trpc.players.all.useQuery();
 
   const statusGroups = {
-    active: demoPlayers.filter(p => p.status === "active"),
-    injured: demoPlayers.filter(p => p.status === "injured"),
-    inactive: demoPlayers.filter(p => (p.status as string) === "inactive"),
+    active: allPlayers.filter((p: any) => p.status === "active"),
+    injured: allPlayers.filter((p: any) => p.status === "injured"),
+    inactive: allPlayers.filter((p: any) => p.status === "inactive"),
   };
+
+  if (isLoading) {
+    return (
+      <ScreenContainer className="flex-1">
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer className="flex-1">
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.title, { color: colors.foreground }]}>ทีมนักกีฬา</Text>
-
-        {/* Summary */}
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, { backgroundColor: colors.success + "15" }]}>
             <Text style={[styles.summaryValue, { color: colors.success }]}>{statusGroups.active.length}</Text>
@@ -34,39 +43,33 @@ export default function TeamScreen() {
             <Text style={[styles.summaryLabel, { color: colors.muted }]}>Inactive</Text>
           </View>
         </View>
-
-        {/* Player List */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {demoPlayers.map((player, idx) => {
-            const pCheckins = demoCheckins.filter(c => c.playerId === player.id);
-            const risk = calculateRiskScore(pCheckins);
-            return (
-              <TouchableOpacity
-                key={player.id}
-                style={[styles.playerRow, idx < demoPlayers.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border }]}
-                onPress={() => router.push({ pathname: "/player-detail" as any, params: { id: player.id.toString() } })}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.avatar, { backgroundColor: player.status === "injured" ? colors.error + "20" : colors.primary + "20" }]}>
-                  <Text style={[styles.avatarText, { color: player.status === "injured" ? colors.error : colors.primary }]}>
-                    {player.name.charAt(0)}
-                  </Text>
-                </View>
-                <View style={styles.playerInfo}>
-                  <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
-                  <Text style={[styles.playerMeta, { color: colors.muted }]}>
-                    {player.level} · {player.program}
-                    {player.status === "injured" && " · 🩹 บาดเจ็บ"}
-                  </Text>
-                </View>
-                <View style={[styles.riskBadge, { backgroundColor: getRiskColor(risk.level) + "20" }]}>
-                  <Text style={{ color: getRiskColor(risk.level), fontSize: 11, fontWeight: "600" }}>
-                    {risk.score}%
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+          {allPlayers.map((player: any, idx: number) => (
+            <TouchableOpacity
+              key={player.id}
+              style={[styles.playerRow, idx < allPlayers.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border }]}
+              onPress={() => router.push({ pathname: "/player-detail" as any, params: { id: player.id.toString() } })}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.avatar, { backgroundColor: player.status === "injured" ? colors.error + "20" : colors.primary + "20" }]}>
+                <Text style={[styles.avatarText, { color: player.status === "injured" ? colors.error : colors.primary }]}>
+                  {player.name.charAt(0)}
+                </Text>
+              </View>
+              <View style={styles.playerInfo}>
+                <Text style={[styles.playerName, { color: colors.foreground }]}>{player.name}</Text>
+                <Text style={[styles.playerMeta, { color: colors.muted }]}>
+                  {player.level} · {player.program}
+                  {player.status === "injured" && " · บาดเจ็บ"}
+                </Text>
+              </View>
+              <View style={[styles.riskBadge, { backgroundColor: (player.status === "injured" ? colors.error : player.status === "inactive" ? colors.warning : colors.success) + "20" }]}>
+                <Text style={{ color: player.status === "injured" ? colors.error : player.status === "inactive" ? colors.warning : colors.success, fontSize: 11, fontWeight: "600" }}>
+                  {player.status === "injured" ? "บาดเจ็บ" : player.status === "inactive" ? "หยุด" : "ปกติ"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
     </ScreenContainer>

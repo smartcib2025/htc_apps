@@ -21,8 +21,8 @@
 - [x] Head Coach Tournament Dashboard
 - [x] Head Coach Coach Analysis view
 - [x] Head Coach All Players list with filters
-- [ ] Admin User Management (CRUD)
-- [ ] Admin Academy Settings
+- [x] Admin User Management (CRUD)
+- [x] Admin Academy Settings
 - [x] KPI Framework (Performance Index, Readiness Index, Peak Index)
 - [x] Risk Model (Injury, Burnout, Plateau detection)
 - [x] Tab navigation per role
@@ -32,3 +32,27 @@
 - [x] Add Note form
 - [x] Report Detail screen
 - [x] Player Detail screen
+- [x] Admin User Management - รายชื่อผู้ใช้ทั้งหมด (FlatList)
+- [x] Admin User Management - เพิ่มผู้ใช้ใหม่ (Add User form)
+- [x] Admin User Management - แก้ไขข้อมูลผู้ใช้ (Edit User form)
+- [x] Admin User Management - ลบผู้ใช้ (Delete with confirmation)
+- [x] Admin User Management - กรองตามบทบาท/สถานะ
+- [x] Admin Academy Settings - ตั้งค่าข้อมูลสถาบัน (ชื่อ, ที่อยู่, เบอร์โทร)
+- [x] Admin Academy Settings - ตั้งค่าโปรแกรมฝึกซ้อม
+- [x] Admin Academy Settings - ตั้งค่าระดับนักกีฬา
+- [x] Admin Tab Navigation - เพิ่ม tab จัดการผู้ใช้และตั้งค่าสถาบัน
+- [x] Backend Integration - เชื่อมต่อ tRPC API จริงแทน Demo Data
+- [x] Backend Integration - Seed ข้อมูลเริ่มต้นลง Database
+- [x] Backend Integration - เปลี่ยนหน้า Home ให้ดึงข้อมูลจาก API
+- [x] Backend Integration - เปลี่ยนหน้า Check-in ให้บันทึกลง DB
+- [x] Backend Integration - เปลี่ยนหน้า Evaluate ให้บันทึกลง DB
+- [x] Backend Integration - เปลี่ยนหน้า Progress ให้ดึงข้อมูลจาก API
+- [x] Backend Integration - เปลี่ยนหน้า Team ให้ดึงข้อมูลจาก API
+- [x] Backend Integration - เปลี่ยนหน้า Matches ให้ดึงข้อมูลจาก API
+- [x] Backend Integration - เปลี่ยนหน้า Reports ให้ดึงข้อมูลจาก API
+- [x] Push Notifications - ตั้งค่า expo-notifications
+- [x] Push Notifications - แจ้งเตือนเช็คอินรายวัน
+- [x] Push Notifications - แจ้งเตือนโค้ชเมื่อมี Risk Level สูง
+- [x] Push Notifications - หน้าตั้งค่าการแจ้งเตือน
+- [x] Push Notifications - แจ้งเตือนการประเมินใหม่
+- [x] Push Notifications - แจ้งเตือนการแข่งขัน

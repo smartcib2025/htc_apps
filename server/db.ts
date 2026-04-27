@@ -9,6 +9,7 @@ import {
   matchStats, InsertMatchStat,
   aiReports, InsertAiReport,
   coachNotes, InsertCoachNote,
+  academySettings, InsertAcademySetting,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -272,6 +273,13 @@ export async function createReport(data: InsertAiReport) {
   return result[0].insertId;
 }
 
+export async function getReportById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(aiReports).where(eq(aiReports.id, id)).limit(1);
+  return result[0];
+}
+
 export async function getLatestReportForPlayer(playerId: number) {
   const db = await getDb();
   if (!db) return undefined;
@@ -356,4 +364,30 @@ export async function getPlayerPerformanceSummary(playerId: number) {
     recentCheckinsCount: recentCheckins.length,
     totalMatches: recentMatches.length,
   };
+}
+
+// ============ ACADEMY SETTINGS QUERIES ============
+export async function getAllSettings() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(academySettings);
+}
+
+export async function getSetting(key: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(academySettings).where(eq(academySettings.settingKey, key)).limit(1);
+  return result[0];
+}
+
+export async function setSetting(key: string, value: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db.select().from(academySettings).where(eq(academySettings.settingKey, key)).limit(1);
+  if (existing.length > 0) {
+    await db.update(academySettings).set({ settingValue: value }).where(eq(academySettings.settingKey, key));
+  } else {
+    await db.insert(academySettings).values({ settingKey: key, settingValue: value });
+  }
+  return { success: true };
 }

@@ -150,3 +150,14 @@ export const coachNotes = mysqlTable("coach_notes", {
 
 export type CoachNote = typeof coachNotes.$inferSelect;
 export type InsertCoachNote = typeof coachNotes.$inferInsert;
+
+// ============ ACADEMY SETTINGS TABLE ============
+export const academySettings = mysqlTable("academy_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
+  settingValue: text("settingValue"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AcademySetting = typeof academySettings.$inferSelect;
+export type InsertAcademySetting = typeof academySettings.$inferInsert;

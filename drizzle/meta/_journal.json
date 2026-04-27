@@ -15,6 +15,13 @@
       "when": 1777275218407,
       "tag": "0001_lively_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777277298788,
+      "tag": "0002_vengeful_wolfsbane",
+      "breakpoints": true
     }
   ]
 }

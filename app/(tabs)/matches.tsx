@@ -1,13 +1,26 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { demoMatches } from "@/lib/demo-data";
+import { useAppContext } from "@/lib/app-context";
+import { trpc } from "@/lib/trpc";
 
 export default function MatchesScreen() {
   const colors = useColors();
   const router = useRouter();
-  const matches = demoMatches.filter(m => m.playerId === 1);
+  const { profileId } = useAppContext();
+  const playerId = profileId || 1;
+  const { data: matches = [], isLoading } = trpc.matches.byPlayer.useQuery({ playerId, limit: 20 });
+
+  if (isLoading) {
+    return (
+      <ScreenContainer className="flex-1">
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer className="flex-1">
@@ -23,7 +36,7 @@ export default function MatchesScreen() {
           </TouchableOpacity>
         </View>
 
-        {matches.map((match) => (
+        {matches.map((match: any) => (
           <View
             key={match.id}
             style={[
@@ -41,7 +54,7 @@ export default function MatchesScreen() {
                   {match.result === "win" ? "ชนะ" : "แพ้"}
                 </Text>
               </View>
-              <Text style={[styles.matchDate, { color: colors.muted }]}>{match.matchDate}</Text>
+              <Text style={[styles.matchDate, { color: colors.muted }]}>{String(match.matchDate)}</Text>
             </View>
 
             <Text style={[styles.matchScore, { color: colors.foreground }]}>{match.score}</Text>

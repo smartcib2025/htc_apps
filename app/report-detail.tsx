@@ -1,93 +1,108 @@
-import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { demoReports, demoPlayers, getRiskColor } from "@/lib/demo-data";
+import { trpc } from "@/lib/trpc";
+
+function getRiskColor(level: string) {
+  if (level === "high") return "#EF4444";
+  if (level === "medium") return "#F59E0B";
+  return "#22C55E";
+}
 
 export default function ReportDetailScreen() {
   const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const reportId = parseInt(id || "1", 10);
-  const report = demoReports.find(r => r.id === reportId) || demoReports[0];
-  const player = demoPlayers.find(p => p.id === report.playerId);
+
+  const { data: allPlayers = [] } = trpc.players.all.useQuery();
+
+  // We need to find the report - query all players' reports to find it
+  // A simpler approach: get all reports and find by id
+  const { data: report, isLoading } = trpc.reports.byId.useQuery({ id: reportId });
+
+  if (isLoading || !report) {
+    return (
+      <ScreenContainer edges={["left", "right"]}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.muted, marginTop: 12 }}>กำลังโหลดรายงาน...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  const player = allPlayers.find((p: any) => p.id === (report as any).playerId);
 
   return (
     <ScreenContainer edges={["left", "right"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.playerName, { color: colors.foreground }]}>{player?.name}</Text>
+          <Text style={[styles.playerName, { color: colors.foreground }]}>{(player as any)?.name || "นักกีฬา"}</Text>
           <Text style={[styles.reportType, { color: colors.primary }]}>
-            {report.reportType === "weekly" ? "รายงานประจำสัปดาห์" : report.reportType === "monthly" ? "รายงานประจำเดือน" : "รายงานทัวร์นาเมนต์"}
+            {(report as any).reportType === "weekly" ? "รายงานประจำสัปดาห์" : (report as any).reportType === "monthly" ? "รายงานประจำเดือน" : "รายงานทัวร์นาเมนต์"}
           </Text>
-          <Text style={[styles.date, { color: colors.muted }]}>{report.generatedAt}</Text>
+          <Text style={[styles.date, { color: colors.muted }]}>{String((report as any).generatedAt)}</Text>
         </View>
 
-        {/* Indices */}
         <View style={styles.indicesRow}>
           <View style={[styles.indexCard, { backgroundColor: colors.primary + "12" }]}>
-            <Text style={[styles.indexValue, { color: colors.primary }]}>{report.performanceIndex}</Text>
+            <Text style={[styles.indexValue, { color: colors.primary }]}>{(report as any).performanceIndex}</Text>
             <Text style={[styles.indexLabel, { color: colors.muted }]}>Performance</Text>
           </View>
           <View style={[styles.indexCard, { backgroundColor: colors.success + "12" }]}>
-            <Text style={[styles.indexValue, { color: colors.success }]}>{report.readinessIndex}</Text>
+            <Text style={[styles.indexValue, { color: colors.success }]}>{(report as any).readinessIndex}</Text>
             <Text style={[styles.indexLabel, { color: colors.muted }]}>Readiness</Text>
           </View>
           <View style={[styles.indexCard, { backgroundColor: colors.warning + "12" }]}>
-            <Text style={[styles.indexValue, { color: colors.warning }]}>{report.peakIndex}</Text>
+            <Text style={[styles.indexValue, { color: colors.warning }]}>{(report as any).peakIndex}</Text>
             <Text style={[styles.indexLabel, { color: colors.muted }]}>Peak Index</Text>
           </View>
         </View>
 
-        {/* Risk */}
-        {report.riskLevel && (
-          <View style={[styles.riskCard, { backgroundColor: getRiskColor(report.riskLevel) + "12", borderColor: getRiskColor(report.riskLevel) + "30" }]}>
-            <Text style={[styles.riskTitle, { color: getRiskColor(report.riskLevel) }]}>
-              ระดับความเสี่ยง: {(report.riskLevel as string) === "high" ? "สูง" : (report.riskLevel as string) === "medium" ? "ปานกลาง" : "ต่ำ"}
+        {(report as any).riskLevel && (
+          <View style={[styles.riskCard, { backgroundColor: getRiskColor(String((report as any).riskLevel)) + "12", borderColor: getRiskColor(String((report as any).riskLevel)) + "30" }]}>
+            <Text style={[styles.riskTitle, { color: getRiskColor(String((report as any).riskLevel)) }]}>
+              ระดับความเสี่ยง: {String((report as any).riskLevel) === "high" ? "สูง" : String((report as any).riskLevel) === "medium" ? "ปานกลาง" : "ต่ำ"}
             </Text>
-            {report.riskType && (
-              <Text style={[styles.riskType, { color: getRiskColor(report.riskLevel) }]}>
-                ประเภท: {report.riskType}
+            {(report as any).riskType && (
+              <Text style={[styles.riskType, { color: getRiskColor(String((report as any).riskLevel)) }]}>
+                ประเภท: {(report as any).riskType}
               </Text>
             )}
           </View>
         )}
 
-        {/* Summary */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>สรุปภาพรวม</Text>
-          <Text style={[styles.sectionText, { color: colors.foreground }]}>{report.summary}</Text>
+          <Text style={[styles.sectionText, { color: colors.foreground }]}>{(report as any).summary}</Text>
         </View>
 
-        {/* Strengths */}
-        {report.strengths && (
+        {(report as any).strengths && (
           <View style={[styles.section, { backgroundColor: colors.success + "08", borderColor: colors.success + "20" }]}>
             <Text style={[styles.sectionTitle, { color: colors.success }]}>จุดแข็ง</Text>
-            <Text style={[styles.sectionText, { color: colors.foreground }]}>{report.strengths}</Text>
+            <Text style={[styles.sectionText, { color: colors.foreground }]}>{(report as any).strengths}</Text>
           </View>
         )}
 
-        {/* Weaknesses */}
-        {report.weaknesses && (
+        {(report as any).weaknesses && (
           <View style={[styles.section, { backgroundColor: colors.error + "08", borderColor: colors.error + "20" }]}>
             <Text style={[styles.sectionTitle, { color: colors.error }]}>จุดที่ต้องพัฒนา</Text>
-            <Text style={[styles.sectionText, { color: colors.foreground }]}>{report.weaknesses}</Text>
+            <Text style={[styles.sectionText, { color: colors.foreground }]}>{(report as any).weaknesses}</Text>
           </View>
         )}
 
-        {/* Action Plan */}
-        {report.actionPlan && (
+        {(report as any).actionPlan && (
           <View style={[styles.section, { backgroundColor: colors.primary + "08", borderColor: colors.primary + "20" }]}>
             <Text style={[styles.sectionTitle, { color: colors.primary }]}>แผนพัฒนา</Text>
-            <Text style={[styles.sectionText, { color: colors.foreground }]}>{report.actionPlan}</Text>
+            <Text style={[styles.sectionText, { color: colors.foreground }]}>{(report as any).actionPlan}</Text>
           </View>
         )}
 
-        {/* Goals */}
-        {report.goals && (
-          <View style={[styles.section, { backgroundColor: colors.gold + "08", borderColor: colors.gold + "20" }]}>
-            <Text style={[styles.sectionTitle, { color: colors.gold }]}>เป้าหมาย</Text>
-            <Text style={[styles.sectionText, { color: colors.foreground }]}>{report.goals}</Text>
+        {(report as any).goals && (
+          <View style={[styles.section, { backgroundColor: colors.warning + "08", borderColor: colors.warning + "20" }]}>
+            <Text style={[styles.sectionTitle, { color: colors.warning }]}>เป้าหมาย</Text>
+            <Text style={[styles.sectionText, { color: colors.foreground }]}>{(report as any).goals}</Text>
           </View>
         )}
       </ScrollView>

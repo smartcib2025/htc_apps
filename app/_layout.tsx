@@ -19,6 +19,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { AppProvider } from "@/lib/app-context";
+import { setupNotifications, addNotificationResponseListener } from "@/lib/notifications";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -37,6 +38,16 @@ export default function RootLayout() {
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
     initManusRuntime();
+  }, []);
+
+  // Setup push notifications on app launch
+  useEffect(() => {
+    setupNotifications();
+    const sub = addNotificationResponseListener((response) => {
+      const data = response.notification.request.content.data;
+      console.log("Notification tapped:", data);
+    });
+    return () => sub.remove();
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -96,6 +107,9 @@ export default function RootLayout() {
               <Stack.Screen name="add-match" options={{ presentation: "modal", headerShown: true, headerTitle: "บันทึกผลแข่งขัน" }} />
               <Stack.Screen name="add-note" options={{ presentation: "modal", headerShown: true, headerTitle: "บันทึกโน้ต" }} />
               <Stack.Screen name="report-detail" options={{ headerShown: true, headerTitle: "รายงาน" }} />
+              <Stack.Screen name="admin-users" options={{ headerShown: true, headerTitle: "จัดการผู้ใช้" }} />
+              <Stack.Screen name="admin-settings" options={{ headerShown: true, headerTitle: "ตั้งค่าสถาบัน" }} />
+              <Stack.Screen name="notification-settings" options={{ headerShown: true, headerTitle: "การแจ้งเตือน" }} />
               <Stack.Screen name="oauth/callback" />
             </Stack>
           </AppProvider>
