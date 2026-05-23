@@ -36,6 +36,13 @@
       "when": 1777278991587,
       "tag": "0004_complete_spirit",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1779530329722,
+      "tag": "0005_flowery_echo",
+      "breakpoints": true
     }
   ]
 }

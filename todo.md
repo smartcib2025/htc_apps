@@ -92,3 +92,18 @@
 - [x] ค่าตอบแทนโค้ช - รายงานค่าตอบแทนรายเดือน (สรุปชั่วโมง, คำนวณค่าตอบแทน)
 - [x] ค่าตอบแทนโค้ช - อนุมัติ/จ่ายค่าตอบแทน สำหรับ Head Coach/Admin
 - [x] ค่าตอบแทนโค้ช - Quick Links จากหน้า Home (Coach/Head Coach)
+- [x] Video Analysis - สร้าง DB table สำหรับ video_analysis (video_url, title, description, date, coach, player)
+- [x] Video Analysis - สร้าง tRPC API สำหรับ upload/download/list videos
+- [x] Video Analysis - หน้าจอ Video Library (รายชื่อวิดีโอ)
+- [x] Video Analysis - หน้าจอ Video Player พร้อม playback ช้า (0.5x, 0.75x, 1x, 1.25x, 1.5x)
+- [x] Video Analysis - หน้าจอ Annotation Tool (วาดเส้น, เพิ่มข้อความ, บันทึก annotation)
+- [x] Statistics & Analytics - สร้าง DB table สำหรับ player_statistics (performance trends, readiness, injury risk)
+- [x] Statistics & Analytics - Dashboard หลัก (KPI cards, กราฟแนวโน้มประสิทธิภาพ)
+- [x] Statistics & Analytics - เปรียบเทียบนักกีฬา (Radar chart, ตารางเปรียบเทียบ)
+- [x] Statistics & Analytics - Predictive analytics สำหรับ injury risk
+- [x] Integration - Google Calendar sync (ดึง/ส่ง events)
+- [x] Integration - Line notifications (setup webhook, ส่ง messages)
+- [x] Integration - Payment gateway (Stripe/Omise) สำหรับจ่ายค่าตอบแทนโค้ช
+- [x] Integration - Settings page สำหรับเปิด/ปิด integrations
+- [x] เปลี่ยน Logo & Icon - ใช้ไฟล์ Hanuman Tennis Association ที่แนบมา
+- [x] เปลี่ยน Logo & Icon - อัปเดต app.config.ts และ theme colors

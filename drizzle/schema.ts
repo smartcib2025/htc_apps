@@ -272,3 +272,104 @@ export const coachingSessions = mysqlTable("coaching_sessions", {
 
 export type CoachingSession = typeof coachingSessions.$inferSelect;
 export type InsertCoachingSession = typeof coachingSessions.$inferInsert;
+
+// ============ VIDEO ANALYSIS TABLE ============
+export const videoAnalysis = mysqlTable("video_analysis", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  videoUrl: text("videoUrl").notNull(),
+  thumbnailUrl: text("thumbnailUrl"),
+  uploadedBy: int("uploadedBy").notNull(),
+  playerId: int("playerId"),
+  coachId: int("coachId"),
+  matchId: int("matchId"),
+  duration: int("duration"), // in seconds
+  uploadDate: date("uploadDate").notNull(),
+  category: mysqlEnum("category", ["training", "match", "technique", "analysis", "other"]).default("training").notNull(),
+  tags: text("tags"), // comma-separated
+  isPublic: boolean("isPublic").default(false),
+  viewCount: int("viewCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type VideoAnalysis = typeof videoAnalysis.$inferSelect;
+export type InsertVideoAnalysis = typeof videoAnalysis.$inferInsert;
+
+// ============ VIDEO ANNOTATIONS TABLE ============
+export const videoAnnotations = mysqlTable("video_annotations", {
+  id: int("id").autoincrement().primaryKey(),
+  videoId: int("videoId").notNull(),
+  createdBy: int("createdBy").notNull(),
+  timestamp: int("timestamp").notNull(), // in seconds
+  annotationType: mysqlEnum("annotationType", ["line", "circle", "rectangle", "text", "arrow"]).default("text").notNull(),
+  content: text("content"),
+  color: varchar("color", { length: 20 }).default("#FF0000"),
+  x: float("x"),
+  y: float("y"),
+  width: float("width"),
+  height: float("height"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type VideoAnnotation = typeof videoAnnotations.$inferSelect;
+export type InsertVideoAnnotation = typeof videoAnnotations.$inferInsert;
+
+// ============ PLAYER STATISTICS TABLE ============
+export const playerStatistics = mysqlTable("player_statistics", {
+  id: int("id").autoincrement().primaryKey(),
+  playerId: int("playerId").notNull(),
+  statisticDate: date("statisticDate").notNull(),
+  performanceScore: float("performanceScore"), // 0-100
+  readinessScore: float("readinessScore"), // 0-100
+  injuryRiskScore: float("injuryRiskScore"), // 0-100 (higher = more risk)
+  burnoutRiskScore: float("burnoutRiskScore"), // 0-100
+  plateauRiskScore: float("plateauRiskScore"), // 0-100
+  trainingHours: float("trainingHours"),
+  matchesPlayed: int("matchesPlayed"),
+  winPercentage: float("winPercentage"),
+  averageServeSpeed: float("averageServeSpeed"),
+  breakPointConversion: float("breakPointConversion"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PlayerStatistic = typeof playerStatistics.$inferSelect;
+export type InsertPlayerStatistic = typeof playerStatistics.$inferInsert;
+
+// ============ INTEGRATION SETTINGS TABLE ============
+export const integrationSettings = mysqlTable("integration_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
+  googleCalendarEnabled: boolean("googleCalendarEnabled").default(false),
+  googleCalendarToken: text("googleCalendarToken"),
+  lineNotificationsEnabled: boolean("lineNotificationsEnabled").default(false),
+  lineChannelAccessToken: text("lineChannelAccessToken"),
+  lineGroupId: varchar("lineGroupId", { length: 255 }),
+  paymentGatewayEnabled: boolean("paymentGatewayEnabled").default(false),
+  paymentProvider: mysqlEnum("paymentProvider", ["stripe", "omise", "paypal"]).default("stripe"),
+  paymentApiKey: text("paymentApiKey"),
+  paymentSecretKey: text("paymentSecretKey"),
+  webhookUrl: text("webhookUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type IntegrationSetting = typeof integrationSettings.$inferSelect;
+export type InsertIntegrationSetting = typeof integrationSettings.$inferInsert;
+
+// ============ PAYMENT TRANSACTIONS TABLE ============
+export const paymentTransactions = mysqlTable("payment_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  coachId: int("coachId").notNull(),
+  amount: float("amount").notNull(),
+  currency: varchar("currency", { length: 10 }).default("THB"),
+  transactionType: mysqlEnum("transactionType", ["coaching_compensation", "bonus", "refund"]).default("coaching_compensation").notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "completed", "failed"]).default("pending").notNull(),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  transactionId: varchar("transactionId", { length: 255 }),
+  month: varchar("month", { length: 7 }), // YYYY-MM
+  approvedBy: int("approvedBy"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
+export type InsertPaymentTransaction = typeof paymentTransactions.$inferInsert;

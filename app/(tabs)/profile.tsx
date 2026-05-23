@@ -124,6 +124,59 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* New Features Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>ฟีเจอร์ใหม่</Text>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/video-library")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#E91E63" + "15" }]}>
+                <MaterialIcons name="videocam" size={18} color="#E91E63" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>วิดีโอวิเคราะห์</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>อัปโหลดและวิเคราะห์วิดีโอ</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/statistics-dashboard")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#00BCD4" + "15" }]}>
+                <MaterialIcons name="bar-chart" size={18} color="#00BCD4" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>สถิติและวิเคราะห์</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>แนวโน้มประสิทธิภาพและความเสี่ยง</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={() => router.push("/integration-settings")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#FF9800" + "15" }]}>
+                <MaterialIcons name="link" size={18} color="#FF9800" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>การเชื่อมต่อ</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>Google Calendar, Line, Payment</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Admin Management Section */}
         {isAdmin && (
           <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>

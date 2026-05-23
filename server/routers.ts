@@ -366,6 +366,41 @@ export const appRouter = router({
     compensation: publicProcedure.input(z.object({ coachId: z.number(), year: z.number(), month: z.number() })).query(({ input }) => db.getExportCoachCompensation(input.coachId, input.year, input.month)),
   }),
 
+  // ============ VIDEO ANALYSIS ============
+  videos: router({
+    list: publicProcedure.input(z.object({ limit: z.number().optional(), offset: z.number().optional() })).query(({ input }) => db.getVideoAnalysisList(input.limit, input.offset)),
+    byId: publicProcedure.input(z.object({ videoId: z.number() })).query(({ input }) => db.getVideoById(input.videoId)),
+    create: publicProcedure.input(z.object({ title: z.string(), description: z.string().optional(), videoUrl: z.string(), uploadedBy: z.number(), playerId: z.number().optional(), coachId: z.number().optional(), category: z.enum(["training", "match", "technique", "analysis", "other"]).optional(), tags: z.string().optional() })).mutation(({ input }) => db.createVideoAnalysis({ ...input, uploadDate: new Date() } as any)),
+    updateViewCount: publicProcedure.input(z.object({ videoId: z.number() })).mutation(({ input }) => db.updateVideoViewCount(input.videoId)),
+  }),
+
+  annotations: router({
+    list: publicProcedure.input(z.object({ videoId: z.number() })).query(({ input }) => db.getVideoAnnotations(input.videoId)),
+    create: publicProcedure.input(z.object({ videoId: z.number(), createdBy: z.number(), timestamp: z.number(), annotationType: z.enum(["line", "circle", "rectangle", "text", "arrow"]), content: z.string().optional(), color: z.string().optional(), x: z.number().optional(), y: z.number().optional(), width: z.number().optional(), height: z.number().optional() })).mutation(({ input }) => db.createVideoAnnotation(input as any)),
+  }),
+
+  // ============ STATISTICS & ANALYTICS ============
+  statistics: router({
+    trend: publicProcedure.input(z.object({ playerId: z.number(), days: z.number().optional() })).query(({ input }) => db.getPlayerStatisticsTrend(input.playerId, input.days)),
+    latest: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getLatestPlayerStatistic(input.playerId)),
+    highRisk: publicProcedure.input(z.object({ threshold: z.number().optional() })).query(({ input }) => db.getHighRiskPlayers(input.threshold)),
+    create: publicProcedure.input(z.object({ playerId: z.number(), performanceScore: z.number().optional(), readinessScore: z.number().optional(), injuryRiskScore: z.number().optional(), burnoutRiskScore: z.number().optional(), plateauRiskScore: z.number().optional(), trainingHours: z.number().optional(), matchesPlayed: z.number().optional(), winPercentage: z.number().optional() })).mutation(({ input }) => db.createPlayerStatistic({ ...input, statisticDate: new Date() } as any)),
+  }),
+
+  // ============ INTEGRATION SETTINGS ============
+  integration: router({
+    settings: publicProcedure.input(z.object({ academyId: z.number().optional() })).query(({ input }) => db.getIntegrationSettings(input.academyId)),
+    updateSettings: publicProcedure.input(z.object({ googleCalendarEnabled: z.boolean().optional(), lineNotificationsEnabled: z.boolean().optional(), paymentGatewayEnabled: z.boolean().optional(), paymentProvider: z.enum(["stripe", "omise", "paypal"]).optional(), academyId: z.number().optional() })).mutation(({ input }) => db.updateIntegrationSettings(input as any, input.academyId)),
+  }),
+
+  // ============ PAYMENT TRANSACTIONS ============
+  payments: router({
+    coachTransactions: publicProcedure.input(z.object({ coachId: z.number(), month: z.string().optional() })).query(({ input }) => db.getCoachPaymentTransactions(input.coachId, input.month)),
+    monthlyReport: publicProcedure.input(z.object({ month: z.string() })).query(({ input }) => db.getMonthlyCompensationReport(input.month)),
+    create: publicProcedure.input(z.object({ coachId: z.number(), amount: z.number(), transactionType: z.enum(["coaching_compensation", "bonus", "refund"]), month: z.string() })).mutation(({ input }) => db.createPaymentTransaction({ ...input, status: "pending" } as any)),
+    updateStatus: publicProcedure.input(z.object({ transactionId: z.number(), status: z.enum(["pending", "processing", "completed", "failed"]), approvedBy: z.number().optional() })).mutation(({ input }) => db.updatePaymentTransactionStatus(input.transactionId, input.status, input.approvedBy)),
+  }),
+
   // ============ EXPORT DATA ============
   export: router({
     playerSummary: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getExportPlayerSummary(input.playerId)),

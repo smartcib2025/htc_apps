@@ -16,6 +16,11 @@ import {
   awards, InsertAward,
   playerAwards, InsertPlayerAward,
   coachingSessions, InsertCoachingSession,
+  videoAnalysis, InsertVideoAnalysis,
+  videoAnnotations, InsertVideoAnnotation,
+  playerStatistics, InsertPlayerStatistic,
+  integrationSettings, InsertIntegrationSetting,
+  paymentTransactions, InsertPaymentTransaction,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -619,4 +624,221 @@ export async function getExportCoachCompensation(coachId: number, year: number, 
   const totalHours = sessions.reduce((sum, s) => sum + (s.hours || 0), 0);
   const totalAmount = sessions.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
   return { coach, sessions, totalHours, totalAmount };
+}
+
+// ============ VIDEO ANALYSIS FUNCTIONS ============
+export async function createVideoAnalysis(data: InsertVideoAnalysis): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create video: database not available");
+    return;
+  }
+  try {
+    await db.insert(videoAnalysis).values(data);
+  } catch (error) {
+    console.error("[Database] Error creating video:", error);
+    throw error;
+  }
+}
+
+export async function getVideoAnalysisList(limit: number = 20, offset: number = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db.select().from(videoAnalysis).limit(limit).offset(offset);
+  } catch (error) {
+    console.error("[Database] Error fetching videos:", error);
+    return [];
+  }
+}
+
+export async function getVideoById(videoId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const result = await db.select().from(videoAnalysis).where(eq(videoAnalysis.id, videoId));
+    return result[0] || null;
+  } catch (error) {
+    console.error("[Database] Error fetching video:", error);
+    return null;
+  }
+}
+
+export async function updateVideoViewCount(videoId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const video = await getVideoById(videoId);
+    if (video) {
+      await db.update(videoAnalysis).set({ viewCount: (video.viewCount || 0) + 1 }).where(eq(videoAnalysis.id, videoId));
+    }
+  } catch (error) {
+    console.error("[Database] Error updating view count:", error);
+  }
+}
+
+export async function createVideoAnnotation(data: InsertVideoAnnotation): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(videoAnnotations).values(data);
+  } catch (error) {
+    console.error("[Database] Error creating annotation:", error);
+    throw error;
+  }
+}
+
+export async function getVideoAnnotations(videoId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db.select().from(videoAnnotations).where(eq(videoAnnotations.videoId, videoId));
+  } catch (error) {
+    console.error("[Database] Error fetching annotations:", error);
+    return [];
+  }
+}
+
+// ============ PLAYER STATISTICS FUNCTIONS ============
+export async function createPlayerStatistic(data: InsertPlayerStatistic): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(playerStatistics).values(data);
+  } catch (error) {
+    console.error("[Database] Error creating statistic:", error);
+    throw error;
+  }
+}
+
+export async function getPlayerStatisticsTrend(playerId: number, days: number = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    return await db.select().from(playerStatistics)
+      .where(and(
+        eq(playerStatistics.playerId, playerId),
+        sql`${playerStatistics.statisticDate} >= ${startDate.toISOString().split('T')[0]}`
+      ))
+      .orderBy(desc(playerStatistics.statisticDate));
+  } catch (error) {
+    console.error("[Database] Error fetching statistics:", error);
+    return [];
+  }
+}
+
+export async function getLatestPlayerStatistic(playerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const result = await db.select().from(playerStatistics)
+      .where(eq(playerStatistics.playerId, playerId))
+      .orderBy(desc(playerStatistics.statisticDate))
+      .limit(1);
+    return result[0] || null;
+  } catch (error) {
+    console.error("[Database] Error fetching latest statistic:", error);
+    return null;
+  }
+}
+
+export async function getHighRiskPlayers(riskThreshold: number = 70) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db.select().from(playerStatistics)
+      .where(sql`${playerStatistics.injuryRiskScore} >= ${riskThreshold}`)
+      .orderBy(desc(playerStatistics.injuryRiskScore));
+  } catch (error) {
+    console.error("[Database] Error fetching high risk players:", error);
+    return [];
+  }
+}
+
+// ============ INTEGRATION SETTINGS FUNCTIONS ============
+export async function getIntegrationSettings(academyId?: number) {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const query = academyId 
+      ? await db.select().from(integrationSettings).where(eq(integrationSettings.academyId, academyId))
+      : await db.select().from(integrationSettings).limit(1);
+    return query[0] || null;
+  } catch (error) {
+    console.error("[Database] Error fetching integration settings:", error);
+    return null;
+  }
+}
+
+export async function updateIntegrationSettings(data: Partial<InsertIntegrationSetting>, academyId?: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const settings = await getIntegrationSettings(academyId);
+    if (settings) {
+      await db.update(integrationSettings).set(data).where(eq(integrationSettings.id, settings.id));
+    } else {
+      await db.insert(integrationSettings).values(data as InsertIntegrationSetting);
+    }
+  } catch (error) {
+    console.error("[Database] Error updating integration settings:", error);
+    throw error;
+  }
+}
+
+// ============ PAYMENT TRANSACTION FUNCTIONS ============
+export async function createPaymentTransaction(data: InsertPaymentTransaction): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.insert(paymentTransactions).values(data);
+  } catch (error) {
+    console.error("[Database] Error creating payment transaction:", error);
+    throw error;
+  }
+}
+
+export async function getCoachPaymentTransactions(coachId: number, month?: string) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const conditions = [eq(paymentTransactions.coachId, coachId)];
+    if (month) {
+      conditions.push(eq(paymentTransactions.month, month));
+    }
+    return await db.select().from(paymentTransactions)
+      .where(and(...conditions))
+      .orderBy(desc(paymentTransactions.createdAt));
+  } catch (error) {
+    console.error("[Database] Error fetching payment transactions:", error);
+    return [];
+  }
+}
+
+export async function getMonthlyCompensationReport(month: string) {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db.select().from(paymentTransactions)
+      .where(eq(paymentTransactions.month, month))
+      .orderBy(desc(paymentTransactions.amount));
+  } catch (error) {
+    console.error("[Database] Error fetching compensation report:", error);
+    return [];
+  }
+}
+
+export async function updatePaymentTransactionStatus(transactionId: number, status: string, approvedBy?: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  try {
+    await db.update(paymentTransactions)
+      .set({ status: status as any, approvedBy })
+      .where(eq(paymentTransactions.id, transactionId));
+  } catch (error) {
+    console.error("[Database] Error updating payment transaction:", error);
+    throw error;
+  }
 }
