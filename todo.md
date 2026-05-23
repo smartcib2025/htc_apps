@@ -107,3 +107,15 @@
 - [x] Integration - Settings page สำหรับเปิด/ปิด integrations
 - [x] เปลี่ยน Logo & Icon - ใช้ไฟล์ Hanuman Tennis Association ที่แนบมา
 - [x] เปลี่ยน Logo & Icon - อัปเดต app.config.ts และ theme colors
+- [x] Advanced Filtering & Search - สร้าง DB table สำหรับ search history
+- [x] Advanced Filtering & Search - สร้าง tRPC API สำหรับ search/filter players
+- [x] Advanced Filtering & Search - หน้าจอค้นหานักกีฬา (ชื่อ, ระดับ, บทบาท, สถานะ)
+- [x] Advanced Filtering & Search - กรองรายงานตามช่วงวันที่
+- [x] Advanced Filtering & Search - บันทึก search history สำหรับ quick access
+- [x] Real-time Notifications Dashboard - สร้าง DB table สำหรับ notifications queue
+- [x] Real-time Notifications Dashboard - สร้าง tRPC API สำหรับ get/mark notifications
+- [x] Real-time Notifications Dashboard - หน้าจอ Notifications Dashboard (live alerts)
+- [x] Real-time Notifications Dashboard - แสดง high-risk players alerts
+- [x] Real-time Notifications Dashboard - แสดง upcoming matches alerts
+- [x] Real-time Notifications Dashboard - แสดง coach compensation approvals alerts
+- [x] Real-time Notifications Dashboard - Mark as read/unread functionality

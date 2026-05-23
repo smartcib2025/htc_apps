@@ -116,7 +116,8 @@ export default function RootLayout() {
               <Stack.Screen name="calendar-view" options={{ headerShown: false }} />
               <Stack.Screen name="awards" options={{ headerShown: false }} />
               <Stack.Screen name="coaching-sessions" options={{ headerShown: false }} />
-              <Stack.Screen name="coach-compensation" options={{ headerShown: false }} />
+              <Stack.Screen name="advanced-search" options={{ headerShown: true, headerTitle: "ค้นหาขั้นสูง" }} />
+              <Stack.Screen name="notifications-dashboard" options={{ headerShown: true, headerTitle: "การแจ้งเตือน" }} />
               <Stack.Screen name="oauth/callback" />
             </Stack>
           </AppProvider>

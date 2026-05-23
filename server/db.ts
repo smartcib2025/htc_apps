@@ -1,4 +1,4 @@
-import { eq, desc, and, count, sql } from "drizzle-orm";
+import { eq, desc, and, count, sql, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser, users,
@@ -21,6 +21,8 @@ import {
   playerStatistics, InsertPlayerStatistic,
   integrationSettings, InsertIntegrationSetting,
   paymentTransactions, InsertPaymentTransaction,
+  searchHistory, InsertSearchHistory,
+  notifications, InsertNotification,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -840,5 +842,185 @@ export async function updatePaymentTransactionStatus(transactionId: number, stat
   } catch (error) {
     console.error("[Database] Error updating payment transaction:", error);
     throw error;
+  }
+}
+
+
+// ============ SEARCH HISTORY ============
+export async function addSearchHistory(data: InsertSearchHistory): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot add search history: database not available");
+    return;
+  }
+  try {
+    await db.insert(searchHistory).values(data);
+  } catch (error) {
+    console.error("[Database] Error adding search history:", error);
+  }
+}
+
+export async function getSearchHistory(userId: number, limit: number = 10): Promise<(typeof searchHistory.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(searchHistory)
+      .where(eq(searchHistory.userId, userId))
+      .orderBy(desc(searchHistory.createdAt))
+      .limit(limit);
+  } catch (error) {
+    console.error("[Database] Error getting search history:", error);
+    return [];
+  }
+}
+
+export async function searchPlayers(query: string, filters?: any): Promise<(typeof players.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    const conditions: any[] = [];
+    
+    if (query) {
+      conditions.push(like(players.name, `%${query}%`));
+    }
+    
+    if (filters?.level) {
+      conditions.push(eq(players.level, filters.level));
+    }
+    
+    if (filters?.status) {
+      conditions.push(eq(players.status, filters.status));
+    }
+    
+    if (filters?.program) {
+      conditions.push(eq(players.program, filters.program));
+    }
+    
+    if (conditions.length > 0) {
+      return await db
+        .select()
+        .from(players)
+        .where(and(...conditions))
+        .limit(50);
+    } else {
+      return await db
+        .select()
+        .from(players)
+        .limit(50);
+    }
+  } catch (error) {
+    console.error("[Database] Error searching players:", error);
+    return [];
+  }
+}
+
+// ============ NOTIFICATIONS ============
+export async function createNotification(data: InsertNotification): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create notification: database not available");
+    return;
+  }
+  try {
+    await db.insert(notifications).values(data);
+  } catch (error) {
+    console.error("[Database] Error creating notification:", error);
+  }
+}
+
+export async function getNotifications(userId: number, limit: number = 20): Promise<(typeof notifications.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+  } catch (error) {
+    console.error("[Database] Error getting notifications:", error);
+    return [];
+  }
+}
+
+export async function getUnreadNotifications(userId: number): Promise<(typeof notifications.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)))
+      .orderBy(desc(notifications.priority), desc(notifications.createdAt));
+  } catch (error) {
+    console.error("[Database] Error getting unread notifications:", error);
+    return [];
+  }
+}
+
+export async function markNotificationAsRead(notificationId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot mark notification: database not available");
+    return;
+  }
+  try {
+    await db
+      .update(notifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(eq(notifications.id, notificationId));
+  } catch (error) {
+    console.error("[Database] Error marking notification as read:", error);
+  }
+}
+
+export async function getHighRiskPlayerNotifications(academyId: number): Promise<(typeof notifications.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.notificationType, "high_risk_player"))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  } catch (error) {
+    console.error("[Database] Error getting high risk notifications:", error);
+    return [];
+  }
+}
+
+export async function getUpcomingMatchNotifications(coachId: number): Promise<(typeof notifications.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.notificationType, "upcoming_match"))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  } catch (error) {
+    console.error("[Database] Error getting match notifications:", error);
+    return [];
+  }
+}
+
+export async function getCoachCompensationNotifications(headCoachId: number): Promise<(typeof notifications.$inferSelect)[]> {
+  const db = await getDb();
+  if (!db) return [];
+  try {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.notificationType, "coach_compensation"))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  } catch (error) {
+    console.error("[Database] Error getting compensation notifications:", error);
+    return [];
   }
 }

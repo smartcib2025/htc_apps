@@ -373,3 +373,46 @@ export const paymentTransactions = mysqlTable("payment_transactions", {
 });
 export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
 export type InsertPaymentTransaction = typeof paymentTransactions.$inferInsert;
+
+
+// ============ SEARCH HISTORY TABLE ============
+export const searchHistory = mysqlTable("search_history", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  searchQuery: varchar("searchQuery", { length: 255 }).notNull(),
+  searchType: mysqlEnum("searchType", ["player", "report", "coach", "match", "award"]).notNull(),
+  filters: text("filters"), // JSON string
+  resultsCount: int("resultsCount"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SearchHistory = typeof searchHistory.$inferSelect;
+export type InsertSearchHistory = typeof searchHistory.$inferInsert;
+
+// ============ NOTIFICATIONS TABLE ============
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  recipientRole: mysqlEnum("recipientRole", ["player", "coach", "head_coach", "admin"]).notNull(),
+  notificationType: mysqlEnum("notificationType", [
+    "high_risk_player",
+    "upcoming_match",
+    "coach_compensation",
+    "evaluation_due",
+    "checkin_reminder",
+    "award_received",
+    "system_alert",
+  ]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  relatedPlayerId: int("relatedPlayerId"),
+  relatedCoachId: int("relatedCoachId"),
+  relatedMatchId: int("relatedMatchId"),
+  relatedTransactionId: int("relatedTransactionId"),
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium"),
+  isRead: boolean("isRead").default(false),
+  actionUrl: text("actionUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  readAt: timestamp("readAt"),
+});
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

@@ -407,6 +407,24 @@ export const appRouter = router({
     attendance: publicProcedure.input(z.object({ year: z.number(), month: z.number() })).query(({ input }) => db.getExportAttendanceReport(input.year, input.month)),
     coachCompensation: publicProcedure.input(z.object({ coachId: z.number(), year: z.number(), month: z.number() })).query(({ input }) => db.getExportCoachCompensation(input.coachId, input.year, input.month)),
   }),
+
+  // ============ SEARCH & FILTERING ============
+  search: router({
+    players: publicProcedure.input(z.object({ query: z.string(), filters: z.object({ level: z.string().optional(), status: z.enum(["active", "inactive", "injured"]).optional(), program: z.string().optional() }).optional() })).query(({ input }) => db.searchPlayers(input.query, input.filters)),
+    history: publicProcedure.input(z.object({ userId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getSearchHistory(input.userId, input.limit)),
+    addToHistory: publicProcedure.input(z.object({ userId: z.number(), searchQuery: z.string(), searchType: z.enum(["player", "report", "coach", "match", "award"]), filters: z.string().optional(), resultsCount: z.number().optional() })).mutation(({ input }) => db.addSearchHistory(input as any)),
+  }),
+
+  // ============ NOTIFICATIONS ============
+  notifications: router({
+    list: publicProcedure.input(z.object({ userId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getNotifications(input.userId, input.limit)),
+    unread: publicProcedure.input(z.object({ userId: z.number() })).query(({ input }) => db.getUnreadNotifications(input.userId)),
+    create: publicProcedure.input(z.object({ userId: z.number(), recipientRole: z.enum(["player", "coach", "head_coach", "admin"]), notificationType: z.enum(["high_risk_player", "upcoming_match", "coach_compensation", "evaluation_due", "checkin_reminder", "award_received", "system_alert"]), title: z.string(), message: z.string(), priority: z.enum(["low", "medium", "high", "critical"]).optional(), relatedPlayerId: z.number().optional(), relatedCoachId: z.number().optional(), relatedMatchId: z.number().optional() })).mutation(({ input }) => db.createNotification(input as any)),
+    markAsRead: publicProcedure.input(z.object({ notificationId: z.number() })).mutation(({ input }) => db.markNotificationAsRead(input.notificationId)),
+    highRiskAlerts: publicProcedure.input(z.object({ academyId: z.number() })).query(({ input }) => db.getHighRiskPlayerNotifications(input.academyId)),
+    upcomingMatches: publicProcedure.input(z.object({ coachId: z.number() })).query(({ input }) => db.getUpcomingMatchNotifications(input.coachId)),
+    compensationAlerts: publicProcedure.input(z.object({ headCoachId: z.number() })).query(({ input }) => db.getCoachCompensationNotifications(input.headCoachId)),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

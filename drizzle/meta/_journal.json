@@ -43,6 +43,13 @@
       "when": 1779530329722,
       "tag": "0005_flowery_echo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1779531202669,
+      "tag": "0006_silky_jane_foster",
+      "breakpoints": true
     }
   ]
 }
