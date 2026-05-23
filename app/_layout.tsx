@@ -110,6 +110,13 @@ export default function RootLayout() {
               <Stack.Screen name="admin-users" options={{ headerShown: true, headerTitle: "จัดการผู้ใช้" }} />
               <Stack.Screen name="admin-settings" options={{ headerShown: true, headerTitle: "ตั้งค่าสถาบัน" }} />
               <Stack.Screen name="notification-settings" options={{ headerShown: true, headerTitle: "การแจ้งเตือน" }} />
+              <Stack.Screen name="login" options={{ presentation: "fullScreenModal" }} />
+              <Stack.Screen name="audit-logs" options={{ headerShown: false }} />
+              <Stack.Screen name="export-report" options={{ headerShown: false }} />
+              <Stack.Screen name="calendar-view" options={{ headerShown: false }} />
+              <Stack.Screen name="awards" options={{ headerShown: false }} />
+              <Stack.Screen name="coaching-sessions" options={{ headerShown: false }} />
+              <Stack.Screen name="coach-compensation" options={{ headerShown: false }} />
               <Stack.Screen name="oauth/callback" />
             </Stack>
           </AppProvider>

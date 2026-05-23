@@ -195,6 +195,183 @@ export const appRouter = router({
     get: publicProcedure.input(z.object({ key: z.string() })).query(({ input }) => db.getSetting(input.key)),
     set: publicProcedure.input(z.object({ key: z.string(), value: z.string() })).mutation(({ input }) => db.setSetting(input.key, input.value)),
   }),
+
+  // ============ USER ACCOUNTS (LOGIN) ============
+  accounts: router({
+    login: publicProcedure.input(z.object({ username: z.string(), password: z.string() })).mutation(async ({ input }) => {
+      const crypto = await import("crypto");
+      const hash = crypto.createHash("sha256").update(input.password).digest("hex");
+      const account = await db.getUserAccountByUsername(input.username);
+      if (!account || account.passwordHash !== hash || !account.isActive) {
+        return { success: false, error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" };
+      }
+      await db.updateLastLogin(account.id);
+      await db.createAuditLog({ userId: account.id, username: account.username, action: "login", entity: "user_accounts", details: `User ${account.username} logged in` });
+      return { success: true, account: { id: account.id, username: account.username, role: account.role, displayName: account.displayName, playerId: account.playerId, coachId: account.coachId } };
+    }),
+    all: publicProcedure.query(() => db.getAllUserAccounts()),
+    create: publicProcedure.input(z.object({
+      username: z.string().min(3).max(100),
+      password: z.string().min(4),
+      role: z.enum(["player", "coach", "head_coach", "admin"]),
+      playerId: z.number().optional(),
+      coachId: z.number().optional(),
+      displayName: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const crypto = await import("crypto");
+      const hash = crypto.createHash("sha256").update(input.password).digest("hex");
+      const { password, ...rest } = input;
+      return db.createUserAccount({ ...rest, passwordHash: hash } as any);
+    }),
+    update: publicProcedure.input(z.object({
+      id: z.number(),
+      displayName: z.string().optional(),
+      role: z.enum(["player", "coach", "head_coach", "admin"]).optional(),
+      isActive: z.boolean().optional(),
+      password: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, password, ...data } = input;
+      const updateData: any = { ...data };
+      if (password) {
+        const crypto = await import("crypto");
+        updateData.passwordHash = crypto.createHash("sha256").update(password).digest("hex");
+      }
+      return db.updateUserAccount(id, updateData);
+    }),
+  }),
+
+  // ============ AUDIT LOGS ============
+  auditLogs: router({
+    all: publicProcedure.input(z.object({ limit: z.number().optional() })).query(({ input }) => db.getAuditLogs(input.limit)),
+    byUser: publicProcedure.input(z.object({ userId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getAuditLogsByUser(input.userId, input.limit)),
+    byAction: publicProcedure.input(z.object({ action: z.string(), limit: z.number().optional() })).query(({ input }) => db.getAuditLogsByAction(input.action, input.limit)),
+    create: publicProcedure.input(z.object({
+      userId: z.number().optional(),
+      username: z.string().optional(),
+      action: z.string(),
+      entity: z.string().optional(),
+      entityId: z.number().optional(),
+      details: z.string().optional(),
+    })).mutation(({ input }) => db.createAuditLog(input as any)),
+  }),
+
+  // ============ CALENDAR EVENTS ============
+  calendar: router({
+    byMonth: publicProcedure.input(z.object({ year: z.number(), month: z.number() })).query(({ input }) => db.getCalendarEventsByMonth(input.year, input.month)),
+    byDate: publicProcedure.input(z.object({ date: z.string() })).query(({ input }) => db.getCalendarEventsByDate(input.date)),
+    create: publicProcedure.input(z.object({
+      title: z.string().min(1).max(255),
+      description: z.string().optional(),
+      eventType: z.enum(["training", "match", "tournament", "meeting", "rest", "other"]),
+      eventDate: z.string(),
+      startTime: z.string().optional(),
+      endTime: z.string().optional(),
+      location: z.string().optional(),
+      playerId: z.number().optional(),
+      coachId: z.number().optional(),
+      isAllPlayers: z.boolean().optional(),
+      color: z.string().optional(),
+      createdBy: z.number().optional(),
+    })).mutation(({ input }) => db.createCalendarEvent(input as any)),
+    update: publicProcedure.input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      eventType: z.enum(["training", "match", "tournament", "meeting", "rest", "other"]).optional(),
+      eventDate: z.string().optional(),
+      startTime: z.string().optional(),
+      endTime: z.string().optional(),
+      location: z.string().optional(),
+      color: z.string().optional(),
+    })).mutation(({ input }) => {
+      const { id, ...data } = input;
+      return db.updateCalendarEvent(id, data as any);
+    }),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteCalendarEvent(input.id)),
+  }),
+
+  // ============ AWARDS ============
+  awards: router({
+    all: publicProcedure.query(() => db.getAllAwards()),
+    create: publicProcedure.input(z.object({
+      name: z.string().min(1).max(255),
+      description: z.string().optional(),
+      category: z.enum(["training", "match", "discipline", "improvement", "special"]),
+      icon: z.string().optional(),
+      badgeColor: z.string().optional(),
+      criteria: z.string().optional(),
+      autoAward: z.boolean().optional(),
+      autoCondition: z.string().optional(),
+      autoThreshold: z.number().optional(),
+    })).mutation(({ input }) => db.createAward(input as any)),
+    update: publicProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().optional(),
+      description: z.string().optional(),
+      category: z.enum(["training", "match", "discipline", "improvement", "special"]).optional(),
+      icon: z.string().optional(),
+      badgeColor: z.string().optional(),
+    })).mutation(({ input }) => {
+      const { id, ...data } = input;
+      return db.updateAward(id, data as any);
+    }),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteAward(input.id)),
+    playerAwards: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getPlayerAwardsByPlayer(input.playerId)),
+    allPlayerAwards: publicProcedure.query(() => db.getAllPlayerAwards()),
+    grant: publicProcedure.input(z.object({
+      playerId: z.number(),
+      awardId: z.number(),
+      awardedBy: z.number().optional(),
+      awardedDate: z.string(),
+      note: z.string().optional(),
+    })).mutation(({ input }) => db.grantAward(input as any)),
+    revoke: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.revokeAward(input.id)),
+  }),
+
+  // ============ COACHING SESSIONS (COMPENSATION) ============
+  coachingSessions: router({
+    byCoach: publicProcedure.input(z.object({ coachId: z.number(), limit: z.number().optional() })).query(({ input }) => db.getCoachingSessionsByCoach(input.coachId, input.limit)),
+    byMonth: publicProcedure.input(z.object({ coachId: z.number(), year: z.number(), month: z.number() })).query(({ input }) => db.getCoachingSessionsByMonth(input.coachId, input.year, input.month)),
+    allByMonth: publicProcedure.input(z.object({ year: z.number(), month: z.number() })).query(({ input }) => db.getAllCoachingSessionsByMonth(input.year, input.month)),
+    create: publicProcedure.input(z.object({
+      coachId: z.number(),
+      sessionDate: z.string(),
+      startTime: z.string(),
+      endTime: z.string(),
+      hours: z.number(),
+      sessionType: z.enum(["private", "group", "camp", "match_coaching", "other"]),
+      content: z.string().optional(),
+      playerIds: z.string().optional(),
+      ratePerHour: z.number().optional(),
+      totalAmount: z.number().optional(),
+      notes: z.string().optional(),
+    })).mutation(({ input }) => db.createCoachingSession(input as any)),
+    update: publicProcedure.input(z.object({
+      id: z.number(),
+      startTime: z.string().optional(),
+      endTime: z.string().optional(),
+      hours: z.number().optional(),
+      sessionType: z.enum(["private", "group", "camp", "match_coaching", "other"]).optional(),
+      content: z.string().optional(),
+      ratePerHour: z.number().optional(),
+      totalAmount: z.number().optional(),
+      status: z.enum(["pending", "approved", "paid"]).optional(),
+      approvedBy: z.number().optional(),
+      notes: z.string().optional(),
+    })).mutation(({ input }) => {
+      const { id, ...data } = input;
+      return db.updateCoachingSession(id, data as any);
+    }),
+    delete: publicProcedure.input(z.object({ id: z.number() })).mutation(({ input }) => db.deleteCoachingSession(input.id)),
+    compensation: publicProcedure.input(z.object({ coachId: z.number(), year: z.number(), month: z.number() })).query(({ input }) => db.getExportCoachCompensation(input.coachId, input.year, input.month)),
+  }),
+
+  // ============ EXPORT DATA ============
+  export: router({
+    playerSummary: publicProcedure.input(z.object({ playerId: z.number() })).query(({ input }) => db.getExportPlayerSummary(input.playerId)),
+    attendance: publicProcedure.input(z.object({ year: z.number(), month: z.number() })).query(({ input }) => db.getExportAttendanceReport(input.year, input.month)),
+    coachCompensation: publicProcedure.input(z.object({ coachId: z.number(), year: z.number(), month: z.number() })).query(({ input }) => db.getExportCoachCompensation(input.coachId, input.year, input.month)),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

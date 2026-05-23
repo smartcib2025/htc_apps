@@ -56,3 +56,39 @@
 - [x] Push Notifications - หน้าตั้งค่าการแจ้งเตือน
 - [x] Push Notifications - แจ้งเตือนการประเมินใหม่
 - [x] Push Notifications - แจ้งเตือนการแข่งขัน
+- [x] Export รายงาน - สร้าง Backend API สำหรับ generate CSV/Text
+- [x] Export รายงาน - หน้าจอเลือกประเภทรายงานและช่วงเวลา
+- [x] Export รายงาน - รายงานภาพรวมนักกีฬา (Player Summary)
+- [x] Export รายงาน - รายงานผลการประเมิน (Evaluation Report)
+- [x] Export รายงาน - รายงานสถิติการแข่งขัน (Match Stats Report)
+- [x] Export รายงาน - รายงานการเช็คอิน (Attendance Report)
+- [x] Export รายงาน - ปุ่ม Share/Download ไฟล์
+- [x] Calendar - สร้าง Database table สำหรับ events/schedule
+- [x] Calendar - สร้าง tRPC API สำหรับ CRUD events
+- [x] Calendar - หน้าจอปฏิทินแบบเดือน (Monthly View)
+- [x] Calendar - แสดงตารางฝึกซ้อมในปฏิทิน
+- [x] Calendar - แสดงการแข่งขันในปฏิทิน
+- [x] Calendar - เพิ่ม/แก้ไข/ลบ event
+- [x] Calendar - Quick Links จากหน้า Home และ Profile
+- [x] Login - สร้าง DB table สำหรับ user_accounts (username, password hash, role, linked player/coach)
+- [x] Login - สร้าง DB table สำหรับ audit_logs (user, action, timestamp, details)
+- [x] Login - สร้าง tRPC API สำหรับ login/register/logout
+- [x] Login - หน้าจอ Login (username + password)
+- [x] Login - เชื่อมต่อ Login กับ AppContext (role-based access)
+- [x] Login - บันทึก Audit Log ทุกการกระทำสำคัญ (login, logout, CRUD, export)
+- [x] Login - หน้าจอดู Audit Logs สำหรับ Admin
+- [x] Login - Session management ด้วย AsyncStorage
+- [x] รางวัล - สร้าง DB table สำหรับ awards (ชื่อรางวัล, ประเภท, เกณฑ์, ไอคอน)
+- [x] รางวัล - สร้าง DB table สำหรับ player_awards (ผู้ได้รับ, วันที่, ผู้มอบ)
+- [x] รางวัล - สร้าง tRPC API สำหรับ CRUD awards และมอบรางวัล
+- [x] รางวัล - หน้าจอแสดงรางวัลทั้งหมด (Awards List)
+- [x] รางวัล - หน้าจอมอบรางวัล สำหรับ Coach/Head Coach
+- [x] รางวัล - Leaderboard อันดับนักกีฬาดีเด่น
+- [x] รางวัล - Quick Links จากหน้า Home และ Profile
+- [x] ค่าตอบแทนโค้ช - สร้าง DB table สำหรับ coaching_sessions (วันเวลา, ชั่วโมง, เนื้อหา, โค้ช)
+- [x] ค่าตอบแทนโค้ช - สร้าง tRPC API สำหรับ CRUD coaching sessions
+- [x] ค่าตอบแทนโค้ช - หน้าจอบันทึกการสอนรายวัน (วันที่, เวลาเริ่ม-สิ้นสุด, ชั่วโมง, เนื้อหา)
+- [x] ค่าตอบแทนโค้ช - หน้าจอรายการสอนของโค้ช (รายวัน/รายสัปดาห์)
+- [x] ค่าตอบแทนโค้ช - รายงานค่าตอบแทนรายเดือน (สรุปชั่วโมง, คำนวณค่าตอบแทน)
+- [x] ค่าตอบแทนโค้ช - อนุมัติ/จ่ายค่าตอบแทน สำหรับ Head Coach/Admin
+- [x] ค่าตอบแทนโค้ช - Quick Links จากหน้า Home (Coach/Head Coach)

@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useAppContext, AppRole } from "@/lib/app-context";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const roleLabels: Record<AppRole, string> = {
   player: "นักกีฬา",
@@ -32,6 +33,7 @@ export default function ProfileScreen() {
   };
 
   const isAdmin = role === "admin" || role === "head_coach";
+  const isCoach = role === "coach" || role === "head_coach";
 
   return (
     <ScreenContainer className="flex-1">
@@ -49,6 +51,79 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Quick Actions Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>เครื่องมือ</Text>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/calendar-view")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#1565C0" + "15" }]}>
+                <MaterialIcons name="calendar-today" size={18} color="#1565C0" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>ปฏิทิน</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>ตารางฝึกซ้อมและการแข่งขัน</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/awards")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#FF6F00" + "15" }]}>
+                <MaterialIcons name="emoji-events" size={18} color="#FF6F00" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>รางวัลและเกียรติยศ</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>ดูรางวัลและอันดับนักกีฬา</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          {isCoach && (
+            <TouchableOpacity
+              style={[styles.menuItem, { borderBottomColor: colors.border }]}
+              onPress={() => router.push("/coaching-sessions")}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuRow}>
+                <View style={[styles.menuIcon, { backgroundColor: "#2E7D32" + "15" }]}>
+                  <MaterialIcons name="schedule" size={18} color="#2E7D32" />
+                </View>
+                <View>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>บันทึกการสอน</Text>
+                  <Text style={[styles.menuDesc, { color: colors.muted }]}>บันทึกชั่วโมงและค่าตอบแทน</Text>
+                </View>
+              </View>
+              <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+            </TouchableOpacity>
+          )}
+          {isAdmin && (
+            <TouchableOpacity
+              style={[styles.menuItem, { borderBottomWidth: 0 }]}
+              onPress={() => router.push("/export-report")}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuRow}>
+                <View style={[styles.menuIcon, { backgroundColor: "#6A1B9A" + "15" }]}>
+                  <MaterialIcons name="file-download" size={18} color="#6A1B9A" />
+                </View>
+                <View>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>ส่งออกรายงาน</Text>
+                  <Text style={[styles.menuDesc, { color: colors.muted }]}>Export ข้อมูลเป็น CSV/Excel</Text>
+                </View>
+              </View>
+              <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         {/* Admin Management Section */}
         {isAdmin && (
           <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -60,7 +135,7 @@ export default function ProfileScreen() {
             >
               <View style={styles.menuRow}>
                 <View style={[styles.menuIcon, { backgroundColor: colors.primary + "15" }]}>
-                  <Text style={{ color: colors.primary, fontSize: 16 }}>👥</Text>
+                  <MaterialIcons name="people" size={18} color={colors.primary} />
                 </View>
                 <View>
                   <Text style={[styles.menuLabel, { color: colors.foreground }]}>จัดการผู้ใช้</Text>
@@ -70,17 +145,49 @@ export default function ProfileScreen() {
               <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.menuItem, { borderBottomWidth: 0 }]}
+              style={[styles.menuItem, { borderBottomColor: colors.border }]}
               onPress={() => router.push("/admin-settings")}
               activeOpacity={0.7}
             >
               <View style={styles.menuRow}>
                 <View style={[styles.menuIcon, { backgroundColor: colors.warning + "15" }]}>
-                  <Text style={{ fontSize: 16 }}>⚙️</Text>
+                  <MaterialIcons name="settings" size={18} color={colors.warning} />
                 </View>
                 <View>
                   <Text style={[styles.menuLabel, { color: colors.foreground }]}>ตั้งค่าสถาบัน</Text>
                   <Text style={[styles.menuDesc, { color: colors.muted }]}>ข้อมูลสถาบัน เวลาฝึก โปรแกรม</Text>
+                </View>
+              </View>
+              <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.menuItem, { borderBottomColor: colors.border }]}
+              onPress={() => router.push("/audit-logs")}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuRow}>
+                <View style={[styles.menuIcon, { backgroundColor: colors.error + "15" }]}>
+                  <MaterialIcons name="history" size={18} color={colors.error} />
+                </View>
+                <View>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>Audit Logs</Text>
+                  <Text style={[styles.menuDesc, { color: colors.muted }]}>ประวัติการใช้งานระบบ</Text>
+                </View>
+              </View>
+              <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.menuItem, { borderBottomWidth: 0 }]}
+              onPress={() => router.push("/coach-compensation")}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuRow}>
+                <View style={[styles.menuIcon, { backgroundColor: "#2E7D32" + "15" }]}>
+                  <MaterialIcons name="payments" size={18} color="#2E7D32" />
+                </View>
+                <View>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>ค่าตอบแทนโค้ช</Text>
+                  <Text style={[styles.menuDesc, { color: colors.muted }]}>ตรวจสอบและอนุมัติค่าตอบแทน</Text>
                 </View>
               </View>
               <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -95,7 +202,11 @@ export default function ProfileScreen() {
             <Text style={[styles.menuLabel, { color: colors.foreground }]}>แก้ไขโปรไฟล์</Text>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} activeOpacity={0.7} onPress={() => router.push("/notification-settings")}>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            activeOpacity={0.7}
+            onPress={() => router.push("/notification-settings")}
+          >
             <Text style={[styles.menuLabel, { color: colors.foreground }]}>การแจ้งเตือน</Text>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
           </TouchableOpacity>

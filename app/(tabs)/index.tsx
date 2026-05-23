@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useState, useCallback, useMemo } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -107,6 +108,24 @@ function PlayerHome() {
           </View>
         )}
       </View>
+      {/* Quick Links */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>เมนูลัด</Text>
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <TouchableOpacity style={[styles.quickLink, { backgroundColor: "#1565C0" + "12" }]} onPress={() => router.push("/calendar-view")} activeOpacity={0.7}>
+            <MaterialIcons name="calendar-today" size={22} color="#1565C0" />
+            <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>ปฏิทิน</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.quickLink, { backgroundColor: "#FF6F00" + "12" }]} onPress={() => router.push("/awards")} activeOpacity={0.7}>
+            <MaterialIcons name="emoji-events" size={22} color="#FF6F00" />
+            <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>รางวัล</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.primary + "12" }]} onPress={() => router.push("/add-match")} activeOpacity={0.7}>
+            <MaterialIcons name="sports-tennis" size={22} color={colors.primary} />
+            <Text style={{ color: colors.primary, fontSize: 12, marginTop: 4, fontWeight: "500" }}>บันทึกแข่ง</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       {latestEval && (
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>การประเมินล่าสุด</Text>
@@ -154,6 +173,21 @@ function CoachHome() {
       <TouchableOpacity style={[styles.bigActionBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/evaluate")} activeOpacity={0.8}>
         <Text style={styles.bigActionText}>ประเมินนักกีฬา</Text>
       </TouchableOpacity>
+      {/* Coach Quick Links */}
+      <View style={{ flexDirection: "row", paddingHorizontal: 16, marginBottom: 14, gap: 10 }}>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#1565C0" + "12" }]} onPress={() => router.push("/calendar-view")} activeOpacity={0.7}>
+          <MaterialIcons name="calendar-today" size={20} color="#1565C0" />
+          <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>ปฏิทิน</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#2E7D32" + "12" }]} onPress={() => router.push("/coaching-sessions")} activeOpacity={0.7}>
+          <MaterialIcons name="schedule" size={20} color="#2E7D32" />
+          <Text style={{ color: "#2E7D32", fontSize: 12, marginTop: 4, fontWeight: "500" }}>บันทึกสอน</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#FF6F00" + "12" }]} onPress={() => router.push("/awards")} activeOpacity={0.7}>
+          <MaterialIcons name="emoji-events" size={20} color="#FF6F00" />
+          <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>รางวัล</Text>
+        </TouchableOpacity>
+      </View>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.foreground }]}>นักกีฬาในทีม ({myPlayers.length})</Text>
         {myPlayers.map((player: any) => (
@@ -201,6 +235,25 @@ function HeadCoachDashboard() {
       <View style={styles.welcomeSection}>
         <Text style={[styles.greeting, { color: colors.muted }]}>Dashboard</Text>
         <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
+      </View>
+      {/* Head Coach Quick Links */}
+      <View style={{ flexDirection: "row", paddingHorizontal: 16, marginBottom: 14, gap: 10 }}>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#1565C0" + "12" }]} onPress={() => router.push("/calendar-view")} activeOpacity={0.7}>
+          <MaterialIcons name="calendar-today" size={20} color="#1565C0" />
+          <Text style={{ color: "#1565C0", fontSize: 11, marginTop: 3, fontWeight: "500" }}>ปฏิทิน</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#FF6F00" + "12" }]} onPress={() => router.push("/awards")} activeOpacity={0.7}>
+          <MaterialIcons name="emoji-events" size={20} color="#FF6F00" />
+          <Text style={{ color: "#FF6F00", fontSize: 11, marginTop: 3, fontWeight: "500" }}>รางวัล</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#6A1B9A" + "12" }]} onPress={() => router.push("/export-report")} activeOpacity={0.7}>
+          <MaterialIcons name="file-download" size={20} color="#6A1B9A" />
+          <Text style={{ color: "#6A1B9A", fontSize: 11, marginTop: 3, fontWeight: "500" }}>Export</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#2E7D32" + "12" }]} onPress={() => router.push("/coach-compensation")} activeOpacity={0.7}>
+          <MaterialIcons name="payments" size={20} color="#2E7D32" />
+          <Text style={{ color: "#2E7D32", fontSize: 11, marginTop: 3, fontWeight: "500" }}>ค่าตอบแทน</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.dashGrid}>
         <View style={[styles.dashCard, { backgroundColor: colors.primary + "12" }]}>
@@ -342,4 +395,5 @@ const styles = StyleSheet.create({
   activityValue: { fontSize: 14, fontWeight: "600" },
   progressBar: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 4 },
+  quickLink: { alignItems: "center", padding: 14, borderRadius: 14 },
 });

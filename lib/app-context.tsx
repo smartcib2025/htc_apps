@@ -8,6 +8,8 @@ interface AppState {
   profileId: number | null; // playerId or coachId
   userName: string;
   isSetup: boolean;
+  accountId: number | null; // user_accounts.id for login system
+  username: string; // login username
 }
 
 interface AppContextType extends AppState {
@@ -15,6 +17,7 @@ interface AppContextType extends AppState {
   setProfileId: (id: number | null) => void;
   setUserName: (name: string) => void;
   completeSetup: (role: AppRole, name: string, profileId?: number) => Promise<void>;
+  loginWithAccount: (account: { id: number; username: string; role: string; displayName: string | null; playerId: number | null; coachId: number | null }) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -28,6 +31,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     profileId: null,
     userName: "",
     isSetup: false,
+    accountId: null,
+    username: "",
   });
 
   useEffect(() => {
@@ -35,7 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         try {
           const parsed = JSON.parse(data);
-          setState(parsed);
+          setState({ ...state, ...parsed });
         } catch {}
       }
     });
@@ -76,6 +81,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       profileId: profileId ?? null,
       userName: name,
       isSetup: true,
+      accountId: state.accountId,
+      username: state.username,
+    };
+    await saveState(newState);
+  }, [saveState, state.accountId, state.username]);
+
+  const loginWithAccount = useCallback(async (account: { id: number; username: string; role: string; displayName: string | null; playerId: number | null; coachId: number | null }) => {
+    const role = account.role as AppRole;
+    const profileId = role === "player" ? account.playerId : account.coachId;
+    const newState: AppState = {
+      role,
+      profileId: profileId ?? null,
+      userName: account.displayName || account.username,
+      isSetup: true,
+      accountId: account.id,
+      username: account.username,
     };
     await saveState(newState);
   }, [saveState]);
@@ -86,12 +107,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       profileId: null,
       userName: "",
       isSetup: false,
+      accountId: null,
+      username: "",
     };
     await saveState(newState);
   }, [saveState]);
 
   return (
-    <AppContext.Provider value={{ ...state, setRole, setProfileId, setUserName, completeSetup, logout }}>
+    <AppContext.Provider value={{ ...state, setRole, setProfileId, setUserName, completeSetup, loginWithAccount, logout }}>
       {children}
     </AppContext.Provider>
   );

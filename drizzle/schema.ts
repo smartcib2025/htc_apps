@@ -161,3 +161,114 @@ export const academySettings = mysqlTable("academy_settings", {
 
 export type AcademySetting = typeof academySettings.$inferSelect;
 export type InsertAcademySetting = typeof academySettings.$inferInsert;
+
+// ============ USER ACCOUNTS TABLE (Login System) ============
+export const userAccounts = mysqlTable("user_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  role: mysqlEnum("role", ["player", "coach", "head_coach", "admin"]).default("player").notNull(),
+  playerId: int("playerId"),
+  coachId: int("coachId"),
+  displayName: varchar("displayName", { length: 255 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  lastLoginAt: timestamp("lastLoginAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserAccount = typeof userAccounts.$inferSelect;
+export type InsertUserAccount = typeof userAccounts.$inferInsert;
+
+// ============ AUDIT LOGS TABLE ============
+export const auditLogs = mysqlTable("audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"),
+  username: varchar("username", { length: 100 }),
+  action: varchar("action", { length: 100 }).notNull(),
+  entity: varchar("entity", { length: 100 }),
+  entityId: int("entityId"),
+  details: text("details"),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+// ============ CALENDAR EVENTS TABLE ============
+export const calendarEvents = mysqlTable("calendar_events", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  eventType: mysqlEnum("eventType", ["training", "match", "tournament", "meeting", "rest", "other"]).default("training").notNull(),
+  eventDate: date("eventDate").notNull(),
+  startTime: varchar("startTime", { length: 10 }),
+  endTime: varchar("endTime", { length: 10 }),
+  location: varchar("location", { length: 255 }),
+  playerId: int("playerId"),
+  coachId: int("coachId"),
+  isAllPlayers: boolean("isAllPlayers").default(false),
+  color: varchar("color", { length: 20 }),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CalendarEvent = typeof calendarEvents.$inferSelect;
+export type InsertCalendarEvent = typeof calendarEvents.$inferInsert;
+
+// ============ AWARDS TABLE ============
+export const awards = mysqlTable("awards", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: mysqlEnum("category", ["training", "match", "discipline", "improvement", "special"]).default("training").notNull(),
+  icon: varchar("icon", { length: 50 }).default("star"),
+  badgeColor: varchar("badgeColor", { length: 20 }).default("#FFD700"),
+  criteria: text("criteria"),
+  autoAward: boolean("autoAward").default(false),
+  autoCondition: varchar("autoCondition", { length: 100 }),
+  autoThreshold: int("autoThreshold"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Award = typeof awards.$inferSelect;
+export type InsertAward = typeof awards.$inferInsert;
+
+// ============ PLAYER AWARDS TABLE ============
+export const playerAwards = mysqlTable("player_awards", {
+  id: int("id").autoincrement().primaryKey(),
+  playerId: int("playerId").notNull(),
+  awardId: int("awardId").notNull(),
+  awardedBy: int("awardedBy"),
+  awardedDate: date("awardedDate").notNull(),
+  note: text("note"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PlayerAward = typeof playerAwards.$inferSelect;
+export type InsertPlayerAward = typeof playerAwards.$inferInsert;
+
+// ============ COACHING SESSIONS TABLE (Coach Compensation) ============
+export const coachingSessions = mysqlTable("coaching_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  coachId: int("coachId").notNull(),
+  sessionDate: date("sessionDate").notNull(),
+  startTime: varchar("startTime", { length: 10 }).notNull(),
+  endTime: varchar("endTime", { length: 10 }).notNull(),
+  hours: float("hours").notNull(),
+  sessionType: mysqlEnum("sessionType", ["private", "group", "camp", "match_coaching", "other"]).default("group").notNull(),
+  content: text("content"),
+  playerIds: text("playerIds"),
+  ratePerHour: float("ratePerHour"),
+  totalAmount: float("totalAmount"),
+  status: mysqlEnum("status", ["pending", "approved", "paid"]).default("pending").notNull(),
+  approvedBy: int("approvedBy"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CoachingSession = typeof coachingSessions.$inferSelect;
+export type InsertCoachingSession = typeof coachingSessions.$inferInsert;

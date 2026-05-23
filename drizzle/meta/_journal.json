@@ -22,6 +22,20 @@
       "when": 1777277298788,
       "tag": "0002_vengeful_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1777278919862,
+      "tag": "0003_lush_madame_masque",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1777278991587,
+      "tag": "0004_complete_spirit",
+      "breakpoints": true
     }
   ]
 }

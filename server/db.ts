@@ -10,6 +10,12 @@ import {
   aiReports, InsertAiReport,
   coachNotes, InsertCoachNote,
   academySettings, InsertAcademySetting,
+  userAccounts, InsertUserAccount,
+  auditLogs, InsertAuditLog,
+  calendarEvents, InsertCalendarEvent,
+  awards, InsertAward,
+  playerAwards, InsertPlayerAward,
+  coachingSessions, InsertCoachingSession,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -390,4 +396,227 @@ export async function setSetting(key: string, value: string) {
     await db.insert(academySettings).values({ settingKey: key, settingValue: value });
   }
   return { success: true };
+}
+
+// ============ USER ACCOUNTS (LOGIN) QUERIES ============
+export async function getUserAccountByUsername(username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(userAccounts).where(eq(userAccounts.username, username)).limit(1);
+  return result[0];
+}
+
+export async function getAllUserAccounts() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userAccounts).orderBy(desc(userAccounts.createdAt));
+}
+
+export async function createUserAccount(data: InsertUserAccount) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(userAccounts).values(data);
+  return result[0].insertId;
+}
+
+export async function updateUserAccount(id: number, data: Partial<InsertUserAccount>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(userAccounts).set(data).where(eq(userAccounts.id, id));
+}
+
+export async function updateLastLogin(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(userAccounts).set({ lastLoginAt: new Date() }).where(eq(userAccounts.id, id));
+}
+
+// ============ AUDIT LOG QUERIES ============
+export async function createAuditLog(data: InsertAuditLog) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(auditLogs).values(data);
+}
+
+export async function getAuditLogs(limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(limit);
+}
+
+export async function getAuditLogsByUser(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).where(eq(auditLogs.userId, userId)).orderBy(desc(auditLogs.createdAt)).limit(limit);
+}
+
+export async function getAuditLogsByAction(action: string, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(auditLogs).where(eq(auditLogs.action, action)).orderBy(desc(auditLogs.createdAt)).limit(limit);
+}
+
+// ============ CALENDAR EVENTS QUERIES ============
+export async function getCalendarEventsByMonth(year: number, month: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endMonth = month === 12 ? 1 : month + 1;
+  const endYear = month === 12 ? year + 1 : year;
+  const endDate = `${endYear}-${String(endMonth).padStart(2, "0")}-01`;
+  return db.select().from(calendarEvents).where(and(sql`${calendarEvents.eventDate} >= ${startDate}`, sql`${calendarEvents.eventDate} < ${endDate}`)).orderBy(calendarEvents.eventDate);
+}
+
+export async function getCalendarEventsByDate(dateStr: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(calendarEvents).where(sql`${calendarEvents.eventDate} = ${dateStr}`).orderBy(calendarEvents.startTime);
+}
+
+export async function createCalendarEvent(data: InsertCalendarEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(calendarEvents).values(data);
+  return result[0].insertId;
+}
+
+export async function updateCalendarEvent(id: number, data: Partial<InsertCalendarEvent>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(calendarEvents).set(data).where(eq(calendarEvents.id, id));
+}
+
+export async function deleteCalendarEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
+}
+
+// ============ AWARDS QUERIES ============
+export async function getAllAwards() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(awards).orderBy(awards.name);
+}
+
+export async function createAward(data: InsertAward) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(awards).values(data);
+  return result[0].insertId;
+}
+
+export async function updateAward(id: number, data: Partial<InsertAward>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(awards).set(data).where(eq(awards.id, id));
+}
+
+export async function deleteAward(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(awards).where(eq(awards.id, id));
+}
+
+// ============ PLAYER AWARDS QUERIES ============
+export async function getPlayerAwardsByPlayer(playerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(playerAwards).where(eq(playerAwards.playerId, playerId)).orderBy(desc(playerAwards.awardedDate));
+}
+
+export async function getAllPlayerAwards() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(playerAwards).orderBy(desc(playerAwards.awardedDate));
+}
+
+export async function grantAward(data: InsertPlayerAward) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(playerAwards).values(data);
+  return result[0].insertId;
+}
+
+export async function revokeAward(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(playerAwards).where(eq(playerAwards.id, id));
+}
+
+// ============ COACHING SESSIONS QUERIES ============
+export async function getCoachingSessionsByCoach(coachId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(coachingSessions).where(eq(coachingSessions.coachId, coachId)).orderBy(desc(coachingSessions.sessionDate)).limit(limit);
+}
+
+export async function getCoachingSessionsByMonth(coachId: number, year: number, month: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endMonth = month === 12 ? 1 : month + 1;
+  const endYear = month === 12 ? year + 1 : year;
+  const endDate = `${endYear}-${String(endMonth).padStart(2, "0")}-01`;
+  return db.select().from(coachingSessions).where(and(eq(coachingSessions.coachId, coachId), sql`${coachingSessions.sessionDate} >= ${startDate}`, sql`${coachingSessions.sessionDate} < ${endDate}`)).orderBy(coachingSessions.sessionDate);
+}
+
+export async function getAllCoachingSessionsByMonth(year: number, month: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endMonth = month === 12 ? 1 : month + 1;
+  const endYear = month === 12 ? year + 1 : year;
+  const endDate = `${endYear}-${String(endMonth).padStart(2, "0")}-01`;
+  return db.select().from(coachingSessions).where(and(sql`${coachingSessions.sessionDate} >= ${startDate}`, sql`${coachingSessions.sessionDate} < ${endDate}`)).orderBy(coachingSessions.sessionDate);
+}
+
+export async function createCoachingSession(data: InsertCoachingSession) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(coachingSessions).values(data);
+  return result[0].insertId;
+}
+
+export async function updateCoachingSession(id: number, data: Partial<InsertCoachingSession>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(coachingSessions).set(data).where(eq(coachingSessions.id, id));
+}
+
+export async function deleteCoachingSession(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(coachingSessions).where(eq(coachingSessions.id, id));
+}
+
+// ============ EXPORT DATA QUERIES ============
+export async function getExportPlayerSummary(playerId: number) {
+  const player = await getPlayerById(playerId);
+  const evals = await getEvalsByPlayer(playerId, 50);
+  const checkins = await getCheckinsByPlayer(playerId, 90);
+  const matches = await getMatchesByPlayer(playerId, 50);
+  const reports = await getReportsByPlayer(playerId, 10);
+  const pAwards = await getPlayerAwardsByPlayer(playerId);
+  return { player, evals, checkins, matches, reports, awards: pAwards };
+}
+
+export async function getExportAttendanceReport(year: number, month: number) {
+  const db = await getDb();
+  if (!db) return { players: [], checkins: [] };
+  const allPlayers = await getAllPlayers();
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endMonth = month === 12 ? 1 : month + 1;
+  const endYear = month === 12 ? year + 1 : year;
+  const endDate = `${endYear}-${String(endMonth).padStart(2, "0")}-01`;
+  const monthCheckins = await db.select().from(dailyCheckins).where(and(sql`${dailyCheckins.checkinDate} >= ${startDate}`, sql`${dailyCheckins.checkinDate} < ${endDate}`)).orderBy(dailyCheckins.checkinDate);
+  return { players: allPlayers, checkins: monthCheckins };
+}
+
+export async function getExportCoachCompensation(coachId: number, year: number, month: number) {
+  const coach = await getCoachById(coachId);
+  const sessions = await getCoachingSessionsByMonth(coachId, year, month);
+  const totalHours = sessions.reduce((sum, s) => sum + (s.hours || 0), 0);
+  const totalAmount = sessions.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+  return { coach, sessions, totalHours, totalAmount };
 }
