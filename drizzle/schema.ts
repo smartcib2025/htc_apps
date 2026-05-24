@@ -416,3 +416,58 @@ export const notifications = mysqlTable("notifications", {
 });
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+
+// ============ EMAIL LOGIN TABLE ============
+export const emailLogins = mysqlTable("email_logins", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  isVerified: boolean("isVerified").default(false).notNull(),
+  verificationToken: varchar("verificationToken", { length: 255 }),
+  verificationTokenExpiry: timestamp("verificationTokenExpiry"),
+  resetToken: varchar("resetToken", { length: 255 }),
+  resetTokenExpiry: timestamp("resetTokenExpiry"),
+  lastLoginAt: timestamp("lastLoginAt"),
+  loginAttempts: int("loginAttempts").default(0).notNull(),
+  isLocked: boolean("isLocked").default(false).notNull(),
+  lockedUntil: timestamp("lockedUntil"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailLogin = typeof emailLogins.$inferSelect;
+export type InsertEmailLogin = typeof emailLogins.$inferInsert;
+
+// ============ ACCESS LOGS TABLE (for tracking all user access) ============
+export const accessLogs = mysqlTable("access_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId"),
+  email: varchar("email", { length: 320 }),
+  username: varchar("username", { length: 100 }),
+  role: mysqlEnum("role", ["player", "coach", "head_coach", "admin"]),
+  loginMethod: varchar("loginMethod", { length: 50 }).notNull(), // "email", "username", "oauth"
+  action: mysqlEnum("action", [
+    "login_success",
+    "login_failed",
+    "logout",
+    "login_attempt_failed",
+    "account_locked",
+    "password_reset_requested",
+    "password_reset_completed",
+    "email_verified",
+    "account_created",
+  ]).notNull(),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  deviceInfo: text("deviceInfo"), // JSON string with device details
+  status: mysqlEnum("status", ["success", "failed"]).notNull(),
+  failureReason: varchar("failureReason", { length: 255 }),
+  sessionId: varchar("sessionId", { length: 255 }),
+  duration: int("duration"), // session duration in seconds
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AccessLog = typeof accessLogs.$inferSelect;
+export type InsertAccessLog = typeof accessLogs.$inferInsert;

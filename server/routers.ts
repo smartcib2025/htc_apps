@@ -3,6 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { emailAuthRouter } from "./email-auth-router";
 import * as db from "./db";
 
 export const appRouter = router({
@@ -15,6 +16,7 @@ export const appRouter = router({
       return { success: true } as const;
     }),
   }),
+  emailAuth: emailAuthRouter,
 
   // ============ PLAYERS ============
   players: router({

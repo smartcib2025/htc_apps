@@ -105,11 +105,21 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Demo Mode */}
-            <TouchableOpacity className="mt-6 items-center active:opacity-60" onPress={handleDemoMode}>
-              <Text className="text-muted text-sm">หรือ</Text>
-              <Text className="text-primary font-medium mt-1">ใช้งานแบบทดลอง (Demo Mode)</Text>
-            </TouchableOpacity>
+            {/* Email Login & Demo Mode */}
+            <View className="mt-6 gap-3">
+              <TouchableOpacity 
+                className="items-center active:opacity-60 py-2" 
+                onPress={() => router.push("/email-login")}
+              >
+                <Text className="text-muted text-sm">หรือ</Text>
+                <Text className="text-primary font-medium mt-1">📧 เข้าสู่ระบบด้วย Email</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity className="items-center active:opacity-60 py-2" onPress={handleDemoMode}>
+                <Text className="text-muted text-sm">หรือ</Text>
+                <Text className="text-primary font-medium mt-1">ใช้งานแบบทดลอง (Demo Mode)</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Demo Accounts Info */}
             <View className="mt-6 bg-surface/50 rounded-xl p-4 border border-border">

@@ -119,3 +119,13 @@
 - [x] Real-time Notifications Dashboard - แสดง upcoming matches alerts
 - [x] Real-time Notifications Dashboard - แสดง coach compensation approvals alerts
 - [x] Real-time Notifications Dashboard - Mark as read/unread functionality
+- [x] Email Login System - Database schema for email_logins and access_logs tables
+- [x] Email Login System - Email authentication API (register, login, verify, password reset)
+- [x] Email Login System - Access logging for all user authentication events
+- [x] Email Login System - Admin audit logs viewer screen
+- [x] Email Login System - Email login UI screen with registration and password reset
+- [x] Email Login System - Account lockout after failed attempts (5 attempts)
+- [x] Email Login System - Password hashing and verification
+- [x] Email Login System - Email verification tokens
+- [x] Email Login System - Password reset tokens
+- [x] Email Login System - Unit tests for email auth and audit logging (125 tests passing)
