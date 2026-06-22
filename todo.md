@@ -142,3 +142,12 @@
 - [x] Two-Factor Authentication (2FA) - Integration with email login flow
 - [x] Two-Factor Authentication (2FA) - Unit tests for 2FA and email service (33 tests passing)
 - [x] Two-Factor Authentication (2FA) - 158 total tests passing
+- [x] Admin 2FA Management Dashboard - 7 tRPC API endpoints (list users, get status, reset, regenerate codes, logs, stats)
+- [x] Admin 2FA Management Dashboard - User list with 2FA status display
+- [x] Admin 2FA Management Dashboard - User detail view with 2FA information
+- [x] Admin 2FA Management Dashboard - Activity logs viewer
+- [x] Admin 2FA Management Dashboard - 2FA statistics and adoption metrics
+- [x] Admin 2FA Management Dashboard - Reset 2FA with confirmation modal
+- [x] Admin 2FA Management Dashboard - Regenerate backup codes functionality
+- [x] Admin 2FA Management Dashboard - Unit tests (53 tests passing)
+- [x] Admin 2FA Management Dashboard - 212 total tests passing
