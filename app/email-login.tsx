@@ -49,11 +49,23 @@ export default function EmailLoginScreen() {
       });
 
       if (result.success) {
-        setSuccess("Login successful!");
-        // Navigate to setup or home
-        setTimeout(() => {
-          router.replace("/setup");
-        }, 500);
+        // Check if 2FA is enabled
+        if ((result as any).requires2FA && result.accountId) {
+          // Redirect to 2FA verification
+          router.replace({
+            pathname: "/2fa-verify",
+            params: {
+              accountId: result.accountId.toString(),
+              email: email,
+            },
+          });
+        } else {
+          setSuccess("Login successful!");
+          // Navigate to home
+          setTimeout(() => {
+            router.replace("/(tabs)");
+          }, 500);
+        }
       }
     } catch (err: any) {
       setError(err.message || "Login failed");

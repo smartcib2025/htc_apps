@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { emailAuthRouter } from "./email-auth-router";
+import { twoFARouter } from "./2fa-router";
 import * as db from "./db";
 
 export const appRouter = router({
@@ -17,6 +18,7 @@ export const appRouter = router({
     }),
   }),
   emailAuth: emailAuthRouter,
+  twoFA: twoFARouter,
 
   // ============ PLAYERS ============
   players: router({

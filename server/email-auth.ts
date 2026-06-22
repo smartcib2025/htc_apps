@@ -2,6 +2,7 @@ import { eq, and, gt, desc, gte, lte } from "drizzle-orm";
 import { getDb } from "./db";
 import { emailLogins, accessLogs, userAccounts } from "../drizzle/schema";
 import crypto from "crypto";
+import * as emailService from "./email-service";
 
 // ============ UTILITY FUNCTIONS ============
 
@@ -112,6 +113,8 @@ export async function createEmailLogin(data: {
   accountId: number;
   email: string;
   password: string;
+  username?: string;
+  baseUrl?: string;
 }): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -126,6 +129,18 @@ export async function createEmailLogin(data: {
     isVerified: false,
     verificationToken,
     verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+  });
+
+  // Send verification email
+  const verificationLink = data.baseUrl
+    ? `${data.baseUrl}/verify-email?email=${encodeURIComponent(data.email)}&token=${verificationToken}`
+    : verificationToken;
+
+  await emailService.sendVerificationEmail({
+    email: data.email,
+    username: data.username || "User",
+    verificationToken,
+    verificationLink,
   });
 
   return result[0].insertId;
@@ -298,7 +313,7 @@ export async function authenticateEmailLogin(
 /**
  * Request password reset
  */
-export async function requestPasswordReset(email: string): Promise<{
+export async function requestPasswordReset(email: string, baseUrl?: string): Promise<{
   success: boolean;
   resetToken?: string;
   reason?: string;
@@ -323,6 +338,25 @@ export async function requestPasswordReset(email: string): Promise<{
     })
     .where(eq(emailLogins.email, email.toLowerCase()));
 
+  // Get account info for email
+  const account = await db
+    .select()
+    .from(userAccounts)
+    .where(eq(userAccounts.id, emailLogin.accountId))
+    .limit(1);
+
+  // Send password reset email
+  const resetLink = baseUrl
+    ? `${baseUrl}/reset-password?email=${encodeURIComponent(email)}&token=${resetToken}`
+    : resetToken;
+
+  await emailService.sendPasswordResetEmail({
+    email,
+    username: account[0]?.username || "User",
+    resetToken,
+    resetLink,
+  });
+
   await logAccess({
     accountId: emailLogin.accountId,
     email,
@@ -331,7 +365,7 @@ export async function requestPasswordReset(email: string): Promise<{
     status: "success",
   });
 
-  return { success: true, resetToken };
+  return { success: true };
 }
 
 /**

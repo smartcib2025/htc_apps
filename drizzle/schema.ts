@@ -471,3 +471,43 @@ export const accessLogs = mysqlTable("access_logs", {
 
 export type AccessLog = typeof accessLogs.$inferSelect;
 export type InsertAccessLog = typeof accessLogs.$inferInsert;
+
+
+// ============ TWO-FACTOR AUTHENTICATION (2FA) TABLES ============
+export const twoFactorSettings = mysqlTable("two_factor_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull().unique(),
+  isEnabled: boolean("isEnabled").default(false).notNull(),
+  totpSecret: varchar("totpSecret", { length: 255 }),
+  backupCodes: text("backupCodes"), // JSON array of backup codes
+  usedBackupCodes: text("usedBackupCodes"), // JSON array of used backup codes
+  enabledAt: timestamp("enabledAt"),
+  lastVerifiedAt: timestamp("lastVerifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TwoFactorSettings = typeof twoFactorSettings.$inferSelect;
+export type InsertTwoFactorSettings = typeof twoFactorSettings.$inferInsert;
+
+// ============ 2FA VERIFICATION LOGS ============
+export const twoFactorLogs = mysqlTable("two_factor_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull(),
+  email: varchar("email", { length: 320 }),
+  action: mysqlEnum("action", [
+    "2fa_enabled",
+    "2fa_disabled",
+    "2fa_verified",
+    "2fa_failed",
+    "backup_code_used",
+  ]).notNull(),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  status: mysqlEnum("status", ["success", "failed"]).notNull(),
+  failureReason: varchar("failureReason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TwoFactorLog = typeof twoFactorLogs.$inferSelect;
+export type InsertTwoFactorLog = typeof twoFactorLogs.$inferInsert;

@@ -129,3 +129,16 @@
 - [x] Email Login System - Email verification tokens
 - [x] Email Login System - Password reset tokens
 - [x] Email Login System - Unit tests for email auth and audit logging (125 tests passing)
+- [x] Email Verification Service Integration - SendGrid email service module
+- [x] Email Verification Service Integration - Email verification and password reset emails
+- [x] Email Verification Service Integration - 2FA setup and backup codes emails
+- [x] Email Verification Service Integration - Email template generation
+- [x] Two-Factor Authentication (2FA) - TOTP secret generation and verification
+- [x] Two-Factor Authentication (2FA) - Backup codes generation and formatting
+- [x] Two-Factor Authentication (2FA) - Database schema for 2FA settings and logs
+- [x] Two-Factor Authentication (2FA) - 2FA API endpoints (enable, verify, disable, logs)
+- [x] Two-Factor Authentication (2FA) - 2FA setup UI screen with QR code
+- [x] Two-Factor Authentication (2FA) - 2FA verification UI screen during login
+- [x] Two-Factor Authentication (2FA) - Integration with email login flow
+- [x] Two-Factor Authentication (2FA) - Unit tests for 2FA and email service (33 tests passing)
+- [x] Two-Factor Authentication (2FA) - 158 total tests passing
