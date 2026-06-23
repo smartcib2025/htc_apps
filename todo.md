@@ -151,3 +151,15 @@
 - [x] Admin 2FA Management Dashboard - Regenerate backup codes functionality
 - [x] Admin 2FA Management Dashboard - Unit tests (53 tests passing)
 - [x] Admin 2FA Management Dashboard - 212 total tests passing
+- [x] Calendar System - Database schema for events and event types
+- [x] Calendar System - Event CRUD API endpoints
+- [x] Calendar System - Calendar UI screen with month view
+- [x] Calendar System - Event details and editing functionality
+- [x] Calendar System - Event filtering by type and date range
+- [x] Calendar System - Event creation with all required fields
+- [x] Calendar System - Event color coding by type
+- [x] Calendar System - Calendar navigation (previous/next month)
+- [x] Calendar System - Upcoming events list
+- [x] Calendar System - Calendar menu item in profile screen
+- [x] Calendar System - Unit tests for calendar functionality (33 tests passing)
+- [x] Calendar System - 244 total tests passing

@@ -6,6 +6,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { emailAuthRouter } from "./email-auth-router";
 import { twoFARouter } from "./2fa-router";
 import { admin2FARouter } from "./admin-2fa-router";
+import { calendarRouter } from "./calendar-router";
 import * as db from "./db";
 
 export const appRouter = router({

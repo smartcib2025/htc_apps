@@ -113,6 +113,7 @@ export default function RootLayout() {
               <Stack.Screen name="login" options={{ presentation: "fullScreenModal" }} />
               <Stack.Screen name="audit-logs" options={{ headerShown: false }} />
               <Stack.Screen name="export-report" options={{ headerShown: false }} />
+              <Stack.Screen name="calendar" options={{ headerShown: false }} />
               <Stack.Screen name="calendar-view" options={{ headerShown: false }} />
               <Stack.Screen name="awards" options={{ headerShown: false }} />
               <Stack.Screen name="coaching-sessions" options={{ headerShown: false }} />

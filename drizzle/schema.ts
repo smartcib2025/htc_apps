@@ -511,3 +511,49 @@ export const twoFactorLogs = mysqlTable("two_factor_logs", {
 
 export type TwoFactorLog = typeof twoFactorLogs.$inferSelect;
 export type InsertTwoFactorLog = typeof twoFactorLogs.$inferInsert;
+
+
+// ============ EVENT REMINDERS TABLE ============
+export const eventReminders = mysqlTable("event_reminders", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  userId: int("userId").notNull(),
+  reminderType: mysqlEnum("reminderType", ["email", "push", "sms"]).notNull(),
+  minutesBefore: int("minutesBefore").default(15).notNull(),
+  sent: boolean("sent").default(false).notNull(),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EventReminder = typeof eventReminders.$inferSelect;
+export type InsertEventReminder = typeof eventReminders.$inferInsert;
+
+// ============ EVENT PARTICIPANTS TABLE ============
+export const eventParticipants = mysqlTable("event_participants", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  participantId: int("participantId").notNull(),
+  participantType: mysqlEnum("participantType", ["player", "coach", "admin"]).notNull(),
+  status: mysqlEnum("status", ["confirmed", "pending", "declined", "no_response"]).default("pending").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EventParticipant = typeof eventParticipants.$inferSelect;
+export type InsertEventParticipant = typeof eventParticipants.$inferInsert;
+
+// ============ CALENDAR EXPORTS TABLE ============
+export const calendarExports = mysqlTable("calendar_exports", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  exportType: mysqlEnum("exportType", ["ical", "pdf", "csv"]).notNull(),
+  eventIds: text("eventIds"), // JSON array of event IDs
+  exportedAt: timestamp("exportedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt"),
+  downloadUrl: text("downloadUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CalendarExport = typeof calendarExports.$inferSelect;
+export type InsertCalendarExport = typeof calendarExports.$inferInsert;

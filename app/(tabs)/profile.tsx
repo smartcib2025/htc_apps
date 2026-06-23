@@ -160,6 +160,22 @@ export default function ProfileScreen() {
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/calendar")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: "#4CAF50" + "15" }]}>
+                <MaterialIcons name="calendar-today" size={18} color="#4CAF50" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>ปฏิทิน</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>จัดการกิจกรรมและเหตุการณ์</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={() => router.push("/integration-settings")}
             activeOpacity={0.7}
