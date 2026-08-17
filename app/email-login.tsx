@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAppContext } from "@/lib/app-context";
@@ -196,8 +197,13 @@ export default function EmailLoginScreen() {
     <ScreenContainer className="bg-background">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-4">
         {/* Header */}
-        <View className="items-center mb-8 mt-4">
-          <Text className="text-3xl font-bold text-foreground mb-2">Email Login</Text>
+        <View className="items-center mb-6 mt-2">
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={{ width: 84, height: 84, borderRadius: 18, marginBottom: 12 }}
+            resizeMode="contain"
+          />
+          <Text className="text-3xl font-bold text-foreground mb-1">Email Login</Text>
           <Text className="text-sm text-muted text-center">Hanuman Tennis Academy</Text>
         </View>
 

@@ -2,6 +2,7 @@ import { ScrollView, Text, View, TouchableOpacity, StyleSheet, RefreshControl, A
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useState, useCallback, useMemo } from "react";
+import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useAppContext } from "@/lib/app-context";
@@ -46,14 +47,21 @@ function PlayerHome() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.welcomeSection}>
-        <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี</Text>
-        <Text style={[styles.userName, { color: colors.foreground }]}>{userName || player?.name || "นักกีฬา"}</Text>
-        {player && (
-          <Text style={[styles.levelBadge, { backgroundColor: colors.primary + "20", color: colors.primary }]}>
-            {player.level} · {player.program}
-          </Text>
-        )}
+      <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี</Text>
+          <Text style={[styles.userName, { color: colors.foreground }]}>{userName || player?.name || "นักกีฬา"}</Text>
+          {player && (
+            <Text style={[styles.levelBadge, { backgroundColor: colors.primary + "20", color: colors.primary }]}>
+              {player.level} · {player.program}
+            </Text>
+          )}
+        </View>
+        <Image
+          source={require("@/assets/images/icon.png")}
+          style={{ width: 56, height: 56, borderRadius: 14 }}
+          resizeMode="contain"
+        />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
         <View style={[styles.statCard, { backgroundColor: colors.primary + "15" }]}>
@@ -166,9 +174,16 @@ function CoachHome() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.welcomeSection}>
-        <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี โค้ช</Text>
-        <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
+      <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี โค้ช</Text>
+          <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
+        </View>
+        <Image
+          source={require("@/assets/images/icon.png")}
+          style={{ width: 56, height: 56, borderRadius: 14 }}
+          resizeMode="contain"
+        />
       </View>
       <TouchableOpacity style={[styles.bigActionBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/evaluate")} activeOpacity={0.8}>
         <Text style={styles.bigActionText}>ประเมินนักกีฬา</Text>
@@ -232,9 +247,16 @@ function HeadCoachDashboard() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.welcomeSection}>
-        <Text style={[styles.greeting, { color: colors.muted }]}>Dashboard</Text>
-        <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
+      <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.greeting, { color: colors.muted }]}>Dashboard</Text>
+          <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
+        </View>
+        <Image
+          source={require("@/assets/images/icon.png")}
+          style={{ width: 56, height: 56, borderRadius: 14 }}
+          resizeMode="contain"
+        />
       </View>
       {/* Head Coach Quick Links */}
       <View style={{ flexDirection: "row", paddingHorizontal: 16, marginBottom: 14, gap: 10 }}>

@@ -38,7 +38,7 @@ describe("Hanuman Tennis Association branding", () => {
 
     expect(config).toContain('icon: "./assets/images/icon.png"');
     expect(config).toContain('favicon: "./assets/images/favicon.png"');
-    expect(config).toContain('image: "./assets/images/splash-icon.png"');
+    expect(config).toContain('"image": "./assets/images/splash-icon.png"');
     expect(config).toContain('foregroundImage: "./assets/images/android-icon-foreground.png"');
     expect(config).toContain('backgroundImage: "./assets/images/android-icon-background.png"');
     expect(config).toContain('monochromeImage: "./assets/images/android-icon-monochrome.png"');

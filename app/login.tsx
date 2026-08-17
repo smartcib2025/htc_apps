@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAppContext } from "@/lib/app-context";
@@ -50,9 +51,12 @@ export default function LoginScreen() {
           <View className="flex-1 justify-center px-6">
             {/* Logo & Title */}
             <View className="items-center mb-10">
-              <View className="w-20 h-20 rounded-2xl items-center justify-center mb-4" style={{ backgroundColor: colors.primary }}>
-                <Text className="text-4xl">🎾</Text>
-              </View>
+              <Image
+                source={require("@/assets/images/icon.png")}
+                className="w-24 h-24 rounded-2xl mb-4"
+                style={{ width: 96, height: 96, borderRadius: 20 }}
+                resizeMode="contain"
+              />
               <Text className="text-3xl font-bold text-foreground">Hanuman Tennis</Text>
               <Text className="text-base text-muted mt-1">Academy Management System</Text>
             </View>
