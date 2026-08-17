@@ -30,8 +30,8 @@ const env = {
   // App branding - update these values directly (do not use env vars)
   appName: "Hanuman Tennis Academy",
   appSlug: "hanuman-tennis",
-  // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
-  // Leave empty to use the default icon from assets/images/icon.png
+  // The provided Hanuman Tennis Association logo is bundled in assets/images/icon.png and related assets.
+  // Leave empty so Expo uses the bundled local logo files.
   logoUrl: "",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
@@ -56,7 +56,7 @@ const config: ExpoConfig = {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
+      backgroundColor: "#001A4D",
       foregroundImage: "./assets/images/android-icon-foreground.png",
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
@@ -105,9 +105,9 @@ const config: ExpoConfig = {
         image: "./assets/images/splash-icon.png",
         imageWidth: 200,
         resizeMode: "contain",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#001A4D",
         dark: {
-          backgroundColor: "#000000",
+          backgroundColor: "#001A4D",
         },
       },
     ],

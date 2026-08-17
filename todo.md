@@ -168,3 +168,7 @@
 - [x] GitHub app setup - Fix any blocking launch or build issues
 - [x] GitHub app setup - Verify the app preview and save a runnable checkpoint
 
+- [x] Branding update - Replace app icon, splash icon, favicon, and adaptive icon with the provided Hanuman Tennis Association logo
+- [x] Branding update - Replace every in-app logo reference with the provided logo
+- [x] Branding update - Verify Expo configuration and run tests after the logo replacement
+
