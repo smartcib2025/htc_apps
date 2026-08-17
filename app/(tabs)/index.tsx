@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { useAppContext } from "@/lib/app-context";
 import { trpc } from "@/lib/trpc";
+import { useLanguage } from "@/lib/i18n";
 
 function getRiskColor(level: string) {
   if (level === "high") return "#EF4444";
@@ -33,6 +34,7 @@ function PlayerHome() {
   const colors = useColors();
   const router = useRouter();
   const { userName, profileId } = useAppContext();
+  const { t } = useLanguage();
   const playerId = profileId || 1;
 
   const { data: player } = trpc.players.byId.useQuery({ id: playerId });
@@ -49,7 +51,7 @@ function PlayerHome() {
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี</Text>
+          <Text style={[styles.greeting, { color: colors.muted }]}>{t("hello")}</Text>
           <Text style={[styles.userName, { color: colors.foreground }]}>{userName || player?.name || "นักกีฬา"}</Text>
           {player && (
             <Text style={[styles.levelBadge, { backgroundColor: colors.primary + "20", color: colors.primary }]}>
@@ -66,24 +68,24 @@ function PlayerHome() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
         <View style={[styles.statCard, { backgroundColor: colors.primary + "15" }]}>
           <Text style={[styles.statValue, { color: colors.primary }]}>{perfIndex}</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>Performance</Text>
+          <Text style={[styles.statLabel, { color: colors.muted }]}>{t("performance")}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.success + "15" }]}>
           <Text style={[styles.statValue, { color: colors.success }]}>{recentCheckins.length}</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>เช็คอินสัปดาห์นี้</Text>
+          <Text style={[styles.statLabel, { color: colors.muted }]}>{t("weeklyCheckIns")}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: getRiskColor(risk.level) + "15" }]}>
           <Text style={[styles.statValue, { color: getRiskColor(risk.level) }]}>{risk.score}%</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>Risk Score</Text>
+          <Text style={[styles.statLabel, { color: colors.muted }]}>{t("riskScore")}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.warning + "15" }]}>
           <Text style={[styles.statValue, { color: colors.warning }]}>{totalHours}h</Text>
-          <Text style={[styles.statLabel, { color: colors.muted }]}>ชั่วโมงฝึกซ้อม</Text>
+          <Text style={[styles.statLabel, { color: colors.muted }]}>{t("trainingHours")}</Text>
         </View>
       </ScrollView>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>เช็คอินวันนี้</Text>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>{t("checkInToday")}</Text>
           {todayCheckin ? (
             <View style={[styles.badge, { backgroundColor: colors.success + "20" }]}>
               <Text style={{ color: colors.success, fontSize: 12, fontWeight: "600" }}>เช็คอินแล้ว</Text>
@@ -96,7 +98,7 @@ function PlayerHome() {
         </View>
         {!todayCheckin && (
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/checkin")} activeOpacity={0.8}>
-            <Text style={styles.actionBtnText}>เช็คอินเลย</Text>
+            <Text style={styles.actionBtnText}>{t("checkInNow")}</Text>
           </TouchableOpacity>
         )}
         {todayCheckin && (
@@ -118,25 +120,25 @@ function PlayerHome() {
       </View>
       {/* Quick Links */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text style={[styles.cardTitle, { color: colors.foreground }]}>เมนูลัด</Text>
+        <Text style={[styles.cardTitle, { color: colors.foreground }]}>{t("settings")}</Text>
         <View style={{ flexDirection: "row", gap: 10 }}>
           <TouchableOpacity style={[styles.quickLink, { backgroundColor: "#1565C0" + "12" }]} onPress={() => router.push("/calendar-view")} activeOpacity={0.7}>
             <MaterialIcons name="calendar-today" size={22} color="#1565C0" />
-            <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>ปฏิทิน</Text>
+            <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>{t("calendar")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.quickLink, { backgroundColor: "#FF6F00" + "12" }]} onPress={() => router.push("/awards")} activeOpacity={0.7}>
             <MaterialIcons name="emoji-events" size={22} color="#FF6F00" />
-            <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>รางวัล</Text>
+            <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>{t("awards")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.quickLink, { backgroundColor: colors.primary + "12" }]} onPress={() => router.push("/add-match")} activeOpacity={0.7}>
             <MaterialIcons name="sports-tennis" size={22} color={colors.primary} />
-            <Text style={{ color: colors.primary, fontSize: 12, marginTop: 4, fontWeight: "500" }}>บันทึกแข่ง</Text>
+            <Text style={{ color: colors.primary, fontSize: 12, marginTop: 4, fontWeight: "500" }}>{t("recordMatch")}</Text>
           </TouchableOpacity>
         </View>
       </View>
       {latestEval && (
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>การประเมินล่าสุด</Text>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>{t("latestEvaluation")}</Text>
           <Text style={[styles.evalDate, { color: colors.muted }]}>{String(latestEval.evalDate)}</Text>
           <View style={styles.evalGrid}>
             {[
@@ -167,6 +169,7 @@ function CoachHome() {
   const colors = useColors();
   const router = useRouter();
   const { userName, profileId } = useAppContext();
+  const { t } = useLanguage();
   const coachId = profileId || 1;
 
   const { data: myPlayers = [] } = trpc.players.byCoach.useQuery({ coachId });
@@ -176,7 +179,7 @@ function CoachHome() {
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.greeting, { color: colors.muted }]}>สวัสดี โค้ช</Text>
+          <Text style={[styles.greeting, { color: colors.muted }]}>{t("helloCoach")}</Text>
           <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
         </View>
         <Image
@@ -192,7 +195,7 @@ function CoachHome() {
       <View style={{ flexDirection: "row", paddingHorizontal: 16, marginBottom: 14, gap: 10 }}>
         <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#1565C0" + "12" }]} onPress={() => router.push("/calendar-view")} activeOpacity={0.7}>
           <MaterialIcons name="calendar-today" size={20} color="#1565C0" />
-          <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>ปฏิทิน</Text>
+          <Text style={{ color: "#1565C0", fontSize: 12, marginTop: 4, fontWeight: "500" }}>{t("calendar")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#2E7D32" + "12" }]} onPress={() => router.push("/coaching-sessions")} activeOpacity={0.7}>
           <MaterialIcons name="schedule" size={20} color="#2E7D32" />
@@ -200,7 +203,7 @@ function CoachHome() {
         </TouchableOpacity>
         <TouchableOpacity style={[styles.quickLink, { flex: 1, backgroundColor: "#FF6F00" + "12" }]} onPress={() => router.push("/awards")} activeOpacity={0.7}>
           <MaterialIcons name="emoji-events" size={20} color="#FF6F00" />
-          <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>รางวัล</Text>
+          <Text style={{ color: "#FF6F00", fontSize: 12, marginTop: 4, fontWeight: "500" }}>{t("awards")}</Text>
         </TouchableOpacity>
       </View>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -234,6 +237,7 @@ function CoachHome() {
 function HeadCoachDashboard() {
   const colors = useColors();
   const { userName } = useAppContext();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const { data: dashStats } = trpc.dashboard.stats.useQuery();
@@ -249,7 +253,7 @@ function HeadCoachDashboard() {
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={[styles.welcomeSection, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.greeting, { color: colors.muted }]}>Dashboard</Text>
+          <Text style={[styles.greeting, { color: colors.muted }]}>{t("dashboard")}</Text>
           <Text style={[styles.userName, { color: colors.foreground }]}>{userName}</Text>
         </View>
         <Image

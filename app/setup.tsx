@@ -4,13 +4,8 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAppContext, AppRole } from "@/lib/app-context";
 import { useColors } from "@/hooks/use-colors";
-
-const roles: { key: AppRole; label: string; icon: string; desc: string }[] = [
-  { key: "player", label: "นักกีฬา", icon: "🎾", desc: "บันทึกการฝึกซ้อม เช็คอิน ดูความก้าวหน้า" },
-  { key: "coach", label: "โค้ช", icon: "📋", desc: "ประเมินนักกีฬา บันทึกโน้ต ดูทีม" },
-  { key: "head_coach", label: "Head Coach", icon: "📊", desc: "Dashboard ภาพรวม วิเคราะห์ทีม" },
-  { key: "admin", label: "ผู้ดูแลระบบ", icon: "⚙️", desc: "จัดการผู้ใช้ ตั้งค่าระบบ" },
-];
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function SetupScreen() {
   const [selectedRole, setSelectedRole] = useState<AppRole>("player");
@@ -18,6 +13,13 @@ export default function SetupScreen() {
   const { completeSetup } = useAppContext();
   const router = useRouter();
   const colors = useColors();
+  const { t } = useLanguage();
+  const roles: { key: AppRole; label: string; icon: string; desc: string }[] = [
+    { key: "player", label: t("player"), icon: "🎾", desc: t("playerDescription") },
+    { key: "coach", label: t("coach"), icon: "📋", desc: t("coachDescription") },
+    { key: "head_coach", label: t("headCoach"), icon: "📊", desc: t("headCoachDescription") },
+    { key: "admin", label: t("admin"), icon: "⚙️", desc: t("adminDescription") },
+  ];
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -34,16 +36,17 @@ export default function SetupScreen() {
             style={styles.logo}
           />
           <Text style={[styles.title, { color: colors.foreground }]}>Hanuman Tennis Academy</Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>
-            ระบบติดตามการฝึกซ้อมเทนนิส
-          </Text>
+          <Text style={[styles.subtitle, { color: colors.muted }]}>{t("setupSubtitle")}</Text>
+          <View style={{ marginTop: 16 }}>
+            <LanguageSelector compact />
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>ชื่อของคุณ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("fullName")}</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border }]}
-            placeholder="กรอกชื่อ-นามสกุล"
+            placeholder={t("fullName")}
             placeholderTextColor={colors.muted}
             value={name}
             onChangeText={setName}
@@ -52,7 +55,7 @@ export default function SetupScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>เลือกบทบาท</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("chooseRole")}</Text>
           {roles.map((role) => (
             <TouchableOpacity
               key={role.key}
@@ -85,7 +88,7 @@ export default function SetupScreen() {
           activeOpacity={0.8}
         >
           <Text style={[styles.submitText, { color: name.trim() ? "#fff" : colors.muted }]}>
-            เริ่มใช้งาน
+            {t("getStarted")}
           </Text>
         </TouchableOpacity>
       </ScrollView>

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAppContext } from "@/lib/app-context";
 import { trpc } from "@/lib/trpc";
@@ -11,6 +13,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const colors = useColors();
   const { loginWithAccount } = useAppContext();
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,13 +60,16 @@ export default function LoginScreen() {
                 style={{ width: 96, height: 96, borderRadius: 20 }}
                 resizeMode="contain"
               />
-              <Text className="text-3xl font-bold text-foreground">Hanuman Tennis</Text>
-              <Text className="text-base text-muted mt-1">Academy Management System</Text>
+              <Text className="text-3xl font-bold text-foreground">{t("appName")}</Text>
+              <Text className="text-base text-muted mt-1">{t("academyManagement")}</Text>
+              <View className="mt-4">
+                <LanguageSelector compact />
+              </View>
             </View>
 
             {/* Login Form */}
             <View className="bg-surface rounded-2xl p-6 border border-border">
-              <Text className="text-lg font-semibold text-foreground mb-4">เข้าสู่ระบบ</Text>
+              <Text className="text-lg font-semibold text-foreground mb-4">{t("login")}</Text>
 
               {error ? (
                 <View className="bg-error/10 rounded-lg p-3 mb-4">
@@ -74,7 +80,7 @@ export default function LoginScreen() {
               <Text className="text-sm text-muted mb-1">ชื่อผู้ใช้</Text>
               <TextInput
                 className="bg-background border border-border rounded-lg px-4 py-3 text-foreground mb-4"
-                placeholder="กรอกชื่อผู้ใช้"
+                placeholder={t("username")}
                 placeholderTextColor={colors.muted}
                 value={username}
                 onChangeText={setUsername}

@@ -2,20 +2,16 @@ import { ScrollView, Text, View, TouchableOpacity, StyleSheet, Alert, Platform }
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { useAppContext, AppRole } from "@/lib/app-context";
+import { useAppContext } from "@/lib/app-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-
-const roleLabels: Record<AppRole, string> = {
-  player: "นักกีฬา",
-  coach: "โค้ช",
-  head_coach: "Head Coach",
-  admin: "ผู้ดูแลระบบ",
-};
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 
 export default function ProfileScreen() {
   const colors = useColors();
   const router = useRouter();
   const { userName, role, logout } = useAppContext();
+  const { t, language } = useLanguage();
 
   const handleLogout = () => {
     if (Platform.OS === "web") {
@@ -47,13 +43,16 @@ export default function ProfileScreen() {
           </View>
           <Text style={[styles.profileName, { color: colors.foreground }]}>{userName}</Text>
           <View style={[styles.rolePill, { backgroundColor: colors.primary + "15" }]}>
-            <Text style={[styles.roleText, { color: colors.primary }]}>{roleLabels[role]}</Text>
+            <Text style={[styles.roleText, { color: colors.primary }]}>{t(role === "player" ? "player" : role === "coach" ? "coach" : role === "head_coach" ? "headCoach" : "admin")}</Text>
+          </View>
+          <View style={{ marginTop: 16 }}>
+            <LanguageSelector />
           </View>
         </View>
 
         {/* Quick Actions Section */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.muted }]}>เครื่องมือ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("tools")}</Text>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={() => router.push("/calendar-view")}
@@ -65,7 +64,7 @@ export default function ProfileScreen() {
               </View>
               <View>
                 <Text style={[styles.menuLabel, { color: colors.foreground }]}>ปฏิทิน</Text>
-                <Text style={[styles.menuDesc, { color: colors.muted }]}>ตารางฝึกซ้อมและการแข่งขัน</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("calendarDescription")}</Text>
               </View>
             </View>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -81,7 +80,7 @@ export default function ProfileScreen() {
               </View>
               <View>
                 <Text style={[styles.menuLabel, { color: colors.foreground }]}>รางวัลและเกียรติยศ</Text>
-                <Text style={[styles.menuDesc, { color: colors.muted }]}>ดูรางวัลและอันดับนักกีฬา</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("awardsDescription")}</Text>
               </View>
             </View>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -126,7 +125,7 @@ export default function ProfileScreen() {
 
         {/* New Features Section */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.muted }]}>ฟีเจอร์ใหม่</Text>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("newFeatures")}</Text>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={() => router.push("/video-library")}
@@ -137,8 +136,8 @@ export default function ProfileScreen() {
                 <MaterialIcons name="videocam" size={18} color="#E91E63" />
               </View>
               <View>
-                <Text style={[styles.menuLabel, { color: colors.foreground }]}>วิดีโอวิเคราะห์</Text>
-                <Text style={[styles.menuDesc, { color: colors.muted }]}>อัปโหลดและวิเคราะห์วิดีโอ</Text>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("videoAnalysis")}</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("videoDescription")}</Text>
               </View>
             </View>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -153,8 +152,8 @@ export default function ProfileScreen() {
                 <MaterialIcons name="bar-chart" size={18} color="#00BCD4" />
               </View>
               <View>
-                <Text style={[styles.menuLabel, { color: colors.foreground }]}>สถิติและวิเคราะห์</Text>
-                <Text style={[styles.menuDesc, { color: colors.muted }]}>แนวโน้มประสิทธิภาพและความเสี่ยง</Text>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("statisticsAnalytics")}</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("statisticsDescription")}</Text>
               </View>
             </View>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -185,8 +184,8 @@ export default function ProfileScreen() {
                 <MaterialIcons name="link" size={18} color="#FF9800" />
               </View>
               <View>
-                <Text style={[styles.menuLabel, { color: colors.foreground }]}>การเชื่อมต่อ</Text>
-                <Text style={[styles.menuDesc, { color: colors.muted }]}>Google Calendar, Line, Payment</Text>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("integrations")}</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("integrationsDescription")}</Text>
               </View>
             </View>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
@@ -196,7 +195,7 @@ export default function ProfileScreen() {
         {/* Admin Management Section */}
         {isAdmin && (
           <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: colors.muted }]}>การจัดการ (Admin)</Text>
+            <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("adminManagement")}</Text>
             <TouchableOpacity
               style={[styles.menuItem, { borderBottomColor: colors.border }]}
               onPress={() => router.push("/admin-users")}
@@ -207,7 +206,7 @@ export default function ProfileScreen() {
                   <MaterialIcons name="people" size={18} color={colors.primary} />
                 </View>
                 <View>
-                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>จัดการผู้ใช้</Text>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("adminUsers")}</Text>
                   <Text style={[styles.menuDesc, { color: colors.muted }]}>เพิ่ม แก้ไข ลบ นักกีฬาและโค้ช</Text>
                 </View>
               </View>
@@ -223,7 +222,7 @@ export default function ProfileScreen() {
                   <MaterialIcons name="settings" size={18} color={colors.warning} />
                 </View>
                 <View>
-                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>ตั้งค่าสถาบัน</Text>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("academySettings")}</Text>
                   <Text style={[styles.menuDesc, { color: colors.muted }]}>ข้อมูลสถาบัน เวลาฝึก โปรแกรม</Text>
                 </View>
               </View>
@@ -266,9 +265,9 @@ export default function ProfileScreen() {
 
         {/* Settings Section */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.muted }]}>การตั้งค่า</Text>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("settings")}</Text>
           <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} activeOpacity={0.7}>
-            <Text style={[styles.menuLabel, { color: colors.foreground }]}>แก้ไขโปรไฟล์</Text>
+            <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("editProfile")}</Text>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -276,28 +275,28 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
             onPress={() => router.push("/notification-settings")}
           >
-            <Text style={[styles.menuLabel, { color: colors.foreground }]}>การแจ้งเตือน</Text>
+            <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("notificationsSettings")}</Text>
             <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} activeOpacity={0.7}>
-            <Text style={[styles.menuLabel, { color: colors.foreground }]}>ภาษา</Text>
-            <Text style={[styles.menuValue, { color: colors.muted }]}>ไทย</Text>
+            <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("language")}</Text>
+            <Text style={[styles.menuValue, { color: colors.muted }]}>{language === "th" ? t("thai") : language === "en" ? t("english") : t("chinese")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleSwitchRole}
             activeOpacity={0.7}
           >
-            <Text style={[styles.menuLabel, { color: colors.foreground }]}>เปลี่ยนบทบาท</Text>
-            <Text style={[styles.menuValue, { color: colors.primary }]}>{roleLabels[role]}</Text>
+            <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("changeRole")}</Text>
+            <Text style={[styles.menuValue, { color: colors.primary }]}>{t(role === "player" ? "player" : role === "coach" ? "coach" : role === "head_coach" ? "headCoach" : "admin")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* About Section */}
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.muted }]}>เกี่ยวกับ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("about")}</Text>
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.menuLabel, { color: colors.foreground }]}>เวอร์ชัน</Text>
+            <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("version")}</Text>
             <Text style={[styles.menuValue, { color: colors.muted }]}>1.0.0</Text>
           </View>
           <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
@@ -311,7 +310,7 @@ export default function ProfileScreen() {
           onPress={handleLogout}
           activeOpacity={0.8}
         >
-          <Text style={[styles.logoutText, { color: colors.error }]}>ออกจากระบบ</Text>
+          <Text style={[styles.menuLabel, { color: colors.error }]}>{t("logout")}</Text>
         </TouchableOpacity>
       </ScrollView>
     </ScreenContainer>

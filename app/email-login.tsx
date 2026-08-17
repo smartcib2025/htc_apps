@@ -2,6 +2,8 @@ import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 import { ScreenContainer } from "@/components/screen-container";
 import { useAppContext } from "@/lib/app-context";
 import { trpc } from "@/lib/trpc";
@@ -12,6 +14,7 @@ type AuthMode = "login" | "register" | "forgot_password" | "reset_password";
 export default function EmailLoginScreen() {
   const router = useRouter();
   const { loginWithAccount } = useAppContext();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -203,8 +206,11 @@ export default function EmailLoginScreen() {
             style={{ width: 84, height: 84, borderRadius: 18, marginBottom: 12 }}
             resizeMode="contain"
           />
-          <Text className="text-3xl font-bold text-foreground mb-1">Email Login</Text>
-          <Text className="text-sm text-muted text-center">Hanuman Tennis Academy</Text>
+          <Text className="text-3xl font-bold text-foreground mb-1">{t("emailLogin")}</Text>
+          <Text className="text-sm text-muted text-center">{t("appName")}</Text>
+          <View className="mt-4">
+            <LanguageSelector compact />
+          </View>
         </View>
 
         {/* Mode Tabs */}
@@ -220,7 +226,7 @@ export default function EmailLoginScreen() {
             <Text
               className={`text-center font-semibold ${mode === "login" ? "text-background" : "text-foreground"}`}
             >
-              Login
+              {t("login")}
             </Text>
           </Pressable>
           <Pressable
@@ -234,7 +240,7 @@ export default function EmailLoginScreen() {
             <Text
               className={`text-center font-semibold ${mode === "register" ? "text-background" : "text-foreground"}`}
             >
-              Register
+              {t("register")}
             </Text>
           </Pressable>
         </View>

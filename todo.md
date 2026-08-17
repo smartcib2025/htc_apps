@@ -177,3 +177,8 @@
 - [x] UI branding - Added academy logo header to Login, Email Login, and Player/Coach/Head Coach Dashboards
 - [x] Production setup - Configured eas.json for Android APK and iOS release builds
 - [x] Testing & Validation - All 247 tests passing successfully
+- [x] Multilingual GUI - Add Thai, English, and Simplified Chinese translation dictionaries
+- [x] Multilingual GUI - Add persistent language context and selector UI
+- [x] Multilingual GUI - Localize primary navigation, setup, login, dashboard, and profile labels
+- [x] Multilingual GUI - Add localization tests and validate all three languages
+
