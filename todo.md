@@ -163,3 +163,8 @@
 - [x] Calendar System - Calendar menu item in profile screen
 - [x] Calendar System - Unit tests for calendar functionality (33 tests passing)
 - [x] Calendar System - 244 total tests passing
+- [x] GitHub app setup - Audit smartcib2025/htc_apps repository and current Expo workspace
+- [x] GitHub app setup - Install dependencies and validate Expo, TypeScript, backend, and tests
+- [x] GitHub app setup - Fix any blocking launch or build issues
+- [x] GitHub app setup - Verify the app preview and save a runnable checkpoint
+
