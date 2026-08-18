@@ -2,6 +2,7 @@ import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as emailAuth from "./email-auth";
 import * as db from "./db";
+import { createAccountSessionToken } from "./tenant";
 
 export const emailAuthRouter = router({
   // ============ EMAIL LOGIN ENDPOINTS ============
@@ -89,10 +90,27 @@ export const emailAuthRouter = router({
       if (!result.success) {
         throw new Error(result.reason || "Login failed");
       }
+      if (!result.accountId) {
+        throw new Error("Login succeeded without an account identity");
+      }
+      const account = await db.getUserAccountById(result.accountId);
+      if (!account) {
+        throw new Error("Authenticated account could not be loaded");
+      }
 
       return {
         success: true,
+        requires2FA: Boolean((result as any).requires2FA),
         accountId: result.accountId,
+        sessionToken: createAccountSessionToken(result.accountId),
+        account: {
+          id: account.id,
+          username: account.username,
+          role: account.role,
+          displayName: account.displayName,
+          playerId: account.playerId,
+          coachId: account.coachId,
+        },
       };
     }),
 

@@ -186,3 +186,12 @@
 - [x] GitHub upload - Review the latest app changes for secrets before staging
 - [ ] GitHub upload - Commit and push the multilingual app to develop
 - [ ] GitHub upload - Verify the uploaded commit and repository status
+
+- [ ] Convert the app to a multi-tenant SaaS platform with academy data isolation
+- [x] Add academy membership and tenant context to authenticated sessions
+- [x] Add tenant-aware access checks to the tRPC API
+- [x] Add academy onboarding and tenant-specific branding settings
+- [x] Add subscription plans, usage limits, and entitlement checks
+- [x] Add SaaS localization labels for Thai, English, and Simplified Chinese
+- [x] Add regression tests for tenant isolation, onboarding, branding, and subscriptions
+- [ ] Resolve GitHub write permissions and synchronize the SaaS changes

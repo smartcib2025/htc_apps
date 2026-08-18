@@ -87,7 +87,15 @@ type TranslationKey =
   | "notifications"
   | "advancedSearch"
   | "academyManagement"
-  | "welcomeUser";
+  | "welcomeUser"
+  | "academyWorkspace"
+  | "switchAcademy"
+  | "createWorkspace"
+  | "academyName"
+  | "academySlug"
+  | "createWorkspaceAction"
+  | "active"
+  | "noAcademies";
 
 export const LANGUAGE_OPTIONS: Array<{ code: LanguageCode; label: string; nativeLabel: string }> = [
   { code: "th", label: "Thai", nativeLabel: "ไทย" },
@@ -180,6 +188,14 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     advancedSearch: "ค้นหาขั้นสูง",
     academyManagement: "ระบบจัดการ Hanuman Tennis Academy",
     welcomeUser: "ยินดีต้อนรับ",
+    academyWorkspace: "พื้นที่สถาบัน",
+    switchAcademy: "สลับสถาบันหรือสร้างพื้นที่ใหม่",
+    createWorkspace: "สร้างพื้นที่สถาบัน",
+    academyName: "ชื่อสถาบัน",
+    academySlug: "ชื่อย่อสถาบัน",
+    createWorkspaceAction: "สร้างพื้นที่",
+    active: "กำลังใช้งาน",
+    noAcademies: "ยังไม่มีสถาบัน",
   },
   en: {
     appName: "Hanuman Tennis Academy",
@@ -265,6 +281,14 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     advancedSearch: "Advanced search",
     academyManagement: "Hanuman Tennis Academy management system",
     welcomeUser: "Welcome",
+    academyWorkspace: "Academy workspace",
+    switchAcademy: "Switch academy or create a workspace",
+    createWorkspace: "Create academy workspace",
+    academyName: "Academy name",
+    academySlug: "Academy slug",
+    createWorkspaceAction: "Create workspace",
+    active: "Active",
+    noAcademies: "No academies yet",
   },
   zh: {
     appName: "Hanuman 网球学院",
@@ -350,6 +374,14 @@ const translations: Record<LanguageCode, Record<TranslationKey, string>> = {
     advancedSearch: "高级搜索",
     academyManagement: "Hanuman 网球学院管理系统",
     welcomeUser: "欢迎",
+    academyWorkspace: "学院工作区",
+    switchAcademy: "切换学院或创建新工作区",
+    createWorkspace: "创建学院工作区",
+    academyName: "学院名称",
+    academySlug: "学院标识",
+    createWorkspaceAction: "创建工作区",
+    active: "当前使用",
+    noAcademies: "暂无学院",
   },
 };
 

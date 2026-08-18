@@ -64,6 +64,9 @@ export default function EmailLoginScreen() {
             },
           });
         } else {
+          if (result.account && result.sessionToken) {
+            await loginWithAccount({ ...result.account, sessionToken: result.sessionToken });
+          }
           setSuccess("Login successful!");
           // Navigate to home
           setTimeout(() => {

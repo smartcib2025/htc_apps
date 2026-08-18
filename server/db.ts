@@ -413,6 +413,13 @@ export async function getUserAccountByUsername(username: string) {
   return result[0];
 }
 
+export async function getUserAccountById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(userAccounts).where(eq(userAccounts.id, id)).limit(1);
+  return result[0];
+}
+
 export async function getAllUserAccounts() {
   const db = await getDb();
   if (!db) return [];

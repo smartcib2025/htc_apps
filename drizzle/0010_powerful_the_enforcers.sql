@@ -1,0 +1,19 @@
+ALTER TABLE `academy_settings` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `ai_reports` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `audit_logs` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `awards` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `calendar_events` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `coach_evaluations` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `coach_notes` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `coaches` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `coaching_sessions` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `daily_checkins` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `match_stats` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `notifications` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `payment_transactions` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `player_awards` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `player_statistics` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `players` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `search_history` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `video_analysis` ADD `academyId` int;--> statement-breakpoint
+ALTER TABLE `video_annotations` ADD `academyId` int;

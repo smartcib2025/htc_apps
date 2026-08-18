@@ -55,6 +55,22 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.muted }]}>{t("tools")}</Text>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push("/academies")}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuRow}>
+              <View style={[styles.menuIcon, { backgroundColor: colors.primary + "15" }]}>
+                <MaterialIcons name="business" size={18} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t("academyWorkspace")}</Text>
+                <Text style={[styles.menuDesc, { color: colors.muted }]}>{t("switchAcademy")}</Text>
+              </View>
+            </View>
+            <Text style={[styles.menuArrow, { color: colors.muted }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={() => router.push("/calendar-view")}
             activeOpacity={0.7}
           >

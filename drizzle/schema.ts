@@ -19,6 +19,7 @@ export type InsertUser = typeof users.$inferInsert;
 // ============ PLAYERS TABLE ============
 export const players = mysqlTable("players", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   userId: int("userId"),
   name: varchar("name", { length: 255 }).notNull(),
   level: varchar("level", { length: 100 }),
@@ -39,6 +40,7 @@ export type InsertPlayer = typeof players.$inferInsert;
 // ============ COACHES TABLE ============
 export const coaches = mysqlTable("coaches", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   userId: int("userId"),
   name: varchar("name", { length: 255 }).notNull(),
   coachRole: mysqlEnum("coachRole", ["coach", "head_coach", "admin"]).default("coach").notNull(),
@@ -56,6 +58,7 @@ export type InsertCoach = typeof coaches.$inferInsert;
 // ============ DAILY CHECK-INS TABLE ============
 export const dailyCheckins = mysqlTable("daily_checkins", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   checkinDate: date("checkinDate").notNull(),
   trainingHours: float("trainingHours"),
@@ -77,6 +80,7 @@ export type InsertDailyCheckin = typeof dailyCheckins.$inferInsert;
 // ============ COACH EVALUATIONS TABLE ============
 export const coachEvaluations = mysqlTable("coach_evaluations", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   coachId: int("coachId").notNull(),
   technique: int("technique"),
@@ -99,6 +103,7 @@ export type InsertCoachEvaluation = typeof coachEvaluations.$inferInsert;
 // ============ MATCH STATS TABLE ============
 export const matchStats = mysqlTable("match_stats", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   matchDate: date("matchDate").notNull(),
   opponent: varchar("opponent", { length: 255 }),
@@ -118,6 +123,7 @@ export type InsertMatchStat = typeof matchStats.$inferInsert;
 // ============ AI REPORTS TABLE ============
 export const aiReports = mysqlTable("ai_reports", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   reportType: mysqlEnum("reportType", ["weekly", "monthly", "tournament"]).default("weekly"),
   summary: text("summary"),
@@ -139,6 +145,7 @@ export type InsertAiReport = typeof aiReports.$inferInsert;
 // ============ COACH NOTES TABLE ============
 export const coachNotes = mysqlTable("coach_notes", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   coachId: int("coachId").notNull(),
   playerId: int("playerId"),
   title: varchar("title", { length: 255 }),
@@ -154,6 +161,7 @@ export type InsertCoachNote = typeof coachNotes.$inferInsert;
 // ============ ACADEMY SETTINGS TABLE ============
 export const academySettings = mysqlTable("academy_settings", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
   settingValue: text("settingValue"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -183,6 +191,7 @@ export type InsertUserAccount = typeof userAccounts.$inferInsert;
 // ============ AUDIT LOGS TABLE ============
 export const auditLogs = mysqlTable("audit_logs", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   userId: int("userId"),
   username: varchar("username", { length: 100 }),
   action: varchar("action", { length: 100 }).notNull(),
@@ -199,6 +208,7 @@ export type InsertAuditLog = typeof auditLogs.$inferInsert;
 // ============ CALENDAR EVENTS TABLE ============
 export const calendarEvents = mysqlTable("calendar_events", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   eventType: mysqlEnum("eventType", ["training", "match", "tournament", "meeting", "rest", "other"]).default("training").notNull(),
@@ -221,6 +231,7 @@ export type InsertCalendarEvent = typeof calendarEvents.$inferInsert;
 // ============ AWARDS TABLE ============
 export const awards = mysqlTable("awards", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   category: mysqlEnum("category", ["training", "match", "discipline", "improvement", "special"]).default("training").notNull(),
@@ -239,6 +250,7 @@ export type InsertAward = typeof awards.$inferInsert;
 // ============ PLAYER AWARDS TABLE ============
 export const playerAwards = mysqlTable("player_awards", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   awardId: int("awardId").notNull(),
   awardedBy: int("awardedBy"),
@@ -253,6 +265,7 @@ export type InsertPlayerAward = typeof playerAwards.$inferInsert;
 // ============ COACHING SESSIONS TABLE (Coach Compensation) ============
 export const coachingSessions = mysqlTable("coaching_sessions", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   coachId: int("coachId").notNull(),
   sessionDate: date("sessionDate").notNull(),
   startTime: varchar("startTime", { length: 10 }).notNull(),
@@ -276,6 +289,7 @@ export type InsertCoachingSession = typeof coachingSessions.$inferInsert;
 // ============ VIDEO ANALYSIS TABLE ============
 export const videoAnalysis = mysqlTable("video_analysis", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   videoUrl: text("videoUrl").notNull(),
@@ -299,6 +313,7 @@ export type InsertVideoAnalysis = typeof videoAnalysis.$inferInsert;
 // ============ VIDEO ANNOTATIONS TABLE ============
 export const videoAnnotations = mysqlTable("video_annotations", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   videoId: int("videoId").notNull(),
   createdBy: int("createdBy").notNull(),
   timestamp: int("timestamp").notNull(), // in seconds
@@ -317,6 +332,7 @@ export type InsertVideoAnnotation = typeof videoAnnotations.$inferInsert;
 // ============ PLAYER STATISTICS TABLE ============
 export const playerStatistics = mysqlTable("player_statistics", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   playerId: int("playerId").notNull(),
   statisticDate: date("statisticDate").notNull(),
   performanceScore: float("performanceScore"), // 0-100
@@ -358,6 +374,7 @@ export type InsertIntegrationSetting = typeof integrationSettings.$inferInsert;
 // ============ PAYMENT TRANSACTIONS TABLE ============
 export const paymentTransactions = mysqlTable("payment_transactions", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   coachId: int("coachId").notNull(),
   amount: float("amount").notNull(),
   currency: varchar("currency", { length: 10 }).default("THB"),
@@ -378,6 +395,7 @@ export type InsertPaymentTransaction = typeof paymentTransactions.$inferInsert;
 // ============ SEARCH HISTORY TABLE ============
 export const searchHistory = mysqlTable("search_history", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   userId: int("userId").notNull(),
   searchQuery: varchar("searchQuery", { length: 255 }).notNull(),
   searchType: mysqlEnum("searchType", ["player", "report", "coach", "match", "award"]).notNull(),
@@ -391,6 +409,7 @@ export type InsertSearchHistory = typeof searchHistory.$inferInsert;
 // ============ NOTIFICATIONS TABLE ============
 export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId"),
   userId: int("userId").notNull(),
   recipientRole: mysqlEnum("recipientRole", ["player", "coach", "head_coach", "admin"]).notNull(),
   notificationType: mysqlEnum("notificationType", [
@@ -557,3 +576,41 @@ export const calendarExports = mysqlTable("calendar_exports", {
 
 export type CalendarExport = typeof calendarExports.$inferSelect;
 export type InsertCalendarExport = typeof calendarExports.$inferInsert;
+
+// ============ SAAS MULTI-TENANT TABLES ============
+
+export const academies = mysqlTable("academies", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  domain: varchar("domain", { length: 255 }),
+  logoUrl: text("logoUrl"),
+  primaryColor: varchar("primaryColor", { length: 20 }).default("#001A4D"),
+  accentColor: varchar("accentColor", { length: 20 }).default("#FFC107"),
+  subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "pro", "enterprise"]).default("pro").notNull(),
+  subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "past_due", "canceled", "trialing"]).default("active").notNull(),
+  maxPlayers: int("maxPlayers").default(50).notNull(),
+  maxCoaches: int("maxCoaches").default(10).notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  trialEndsAt: timestamp("trialEndsAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Academy = typeof academies.$inferSelect;
+export type InsertAcademy = typeof academies.$inferInsert;
+
+export const academyMemberships = mysqlTable("academy_memberships", {
+  id: int("id").autoincrement().primaryKey(),
+  academyId: int("academyId").notNull(),
+  userId: int("userId").notNull(),
+  role: mysqlEnum("role", ["tenant_admin", "coach", "player"]).default("player").notNull(),
+  title: varchar("title", { length: 100 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AcademyMembership = typeof academyMemberships.$inferSelect;
+export type InsertAcademyMembership = typeof academyMemberships.$inferInsert;

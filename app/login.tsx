@@ -31,7 +31,7 @@ export default function LoginScreen() {
     try {
       const result = await loginMutation.mutateAsync({ username: username.trim(), password });
       if (result.success && result.account) {
-        await loginWithAccount(result.account);
+        await loginWithAccount({ ...result.account, sessionToken: result.sessionToken });
         router.replace("/(tabs)");
       } else {
         setError(result.error || "เข้าสู่ระบบไม่สำเร็จ");

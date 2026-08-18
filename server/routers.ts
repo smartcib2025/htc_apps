@@ -7,6 +7,8 @@ import { emailAuthRouter } from "./email-auth-router";
 import { twoFARouter } from "./2fa-router";
 import { admin2FARouter } from "./admin-2fa-router";
 import { calendarRouter } from "./calendar-router";
+import { tenantRouter } from "./tenant-router";
+import { createAccountSessionToken } from "./tenant";
 import * as db from "./db";
 
 export const appRouter = router({
@@ -22,6 +24,7 @@ export const appRouter = router({
   emailAuth: emailAuthRouter,
   twoFA: twoFARouter,
   admin2FA: admin2FARouter,
+  tenant: tenantRouter,
 
   // ============ PLAYERS ============
   players: router({
@@ -214,7 +217,7 @@ export const appRouter = router({
       }
       await db.updateLastLogin(account.id);
       await db.createAuditLog({ userId: account.id, username: account.username, action: "login", entity: "user_accounts", details: `User ${account.username} logged in` });
-      return { success: true, account: { id: account.id, username: account.username, role: account.role, displayName: account.displayName, playerId: account.playerId, coachId: account.coachId } };
+      return { success: true, sessionToken: createAccountSessionToken(account.id), account: { id: account.id, username: account.username, role: account.role, displayName: account.displayName, playerId: account.playerId, coachId: account.coachId } };
     }),
     all: publicProcedure.query(() => db.getAllUserAccounts()),
     create: publicProcedure.input(z.object({
